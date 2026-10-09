@@ -32,6 +32,8 @@ body{
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
 }
 body.locked{overflow:hidden}
+/* Feste Fläche hinter der iPhone-Statusleiste, damit dort nichts verschwommen durchscheint */
+body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--bg);z-index:40;pointer-events:none}
 input,textarea{-webkit-user-select:text;user-select:text}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
 .bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:float 22s ease-in-out infinite alternate}
@@ -346,7 +348,7 @@ body.card-mode>header,body.card-mode>main{display:none}
 
 /* ---------- Handy ---------- */
 @media (max-width:640px){
-  header{padding:calc(var(--sat) + 10px) 14px 10px}
+  header{padding:calc(var(--sat) + 16px) 14px 12px}
   .logo{font-size:1.18rem;gap:9px}.logo img{width:34px;height:34px;border-radius:9px}
   .hbtn .lbl{display:none}
   .hbtn{width:42px;height:42px;padding:0;border-radius:13px}
@@ -374,7 +376,7 @@ body.card-mode>header,body.card-mode>main{display:none}
   .cover{width:min(190px,55vw);height:min(190px,55vw)}
   .hist{padding:2px 16px}
   /* Sheets kommen von unten wie in iOS */
-  .sheet{width:100vw;max-width:100vw;height:calc(100dvh - var(--sat) - 14px);margin:auto 0 0;border-radius:14px 14px 0 0;border-bottom:0}
+  .sheet{width:100vw;max-width:100vw;height:calc(100dvh - max(var(--sat), 20px) - 24px);margin:auto 0 0;border-radius:14px 14px 0 0;border-bottom:0}
   .sheet[open]{animation:sheetUp .38s cubic-bezier(.2,.9,.3,1)}
   .grab{display:block}
   .sheet-head{padding-top:18px}
@@ -556,7 +558,7 @@ body.card-mode>header,body.card-mode>main{display:none}
             <option value="5">5 Sekunden</option>
           </select>
         </label>
-        <label class="cell"><span class="cell-ic" style="background:#ffb020"><svg class="ic"><use href="#i-bulb"/></svg></span><span class="grow">Tipps erlauben<span class="sub">Kostet 1 Punkt pro Tipp</span></span><span class="switch"><input type="checkbox" id="setHints"><span></span></span></label>
+        <label class="cell"><span class="cell-ic" style="background:#ffb020"><svg class="ic"><use href="#i-bulb"/></svg></span><span class="grow">Tipps erlauben<span class="sub">Anfangsbuchstabe, Jahrzehnt oder Cover</span></span><span class="switch"><input type="checkbox" id="setHints"><span></span></span></label>
       </div>
 
       <div class="group-h">Jahreszahlen</div>
@@ -667,7 +669,7 @@ body.card-mode>header,body.card-mode>main{display:none}
           <button id="btnAddPlayer" class="mini">Hinzufügen</button>
         </div>
       </div>
-      <div class="group-f">Nach jeder Auflösung tippst du an, wer richtig lag. Schwere Kategorien geben mehr Punkte, jeder benutzte Tipp einen Punkt weniger.</div>
+      <div class="group-f">Nach jeder Auflösung tippst du an, wer richtig lag. Schwere Kategorien geben mehr Punkte.</div>
 
       <div class="group icons" style="margin-top:22px">
         <button class="cell tap" data-go="bingo">
@@ -826,7 +828,7 @@ const mbYear = t => state.settings.mb && state.mb[t.id] > 0 ? state.mb[t.id] : n
 const yearOf = t => state.yearFix[t.id] ?? mbYear(t) ?? t.year ?? null;
 const DEF_PTS = { title: 2, artist: 2, year: 3, decade: 1, range: 2, album: 2, none: 1 };
 const catPts = c => c.pts ?? DEF_PTS[c.answer] ?? 1;
-const roundPts = () => Math.max(1, catPts(round.cat) - (round.hints || 0));
+const roundPts = () => catPts(round.cat);
 const decLabel = d => (d < 2000 ? String(d).slice(2) : d) + 'er';
 const decadeOf = y => y ? Math.floor(y / 10) * 10 + 'er' : '?';
 
@@ -1868,7 +1870,7 @@ function renderReveal() {
   const pts = roundPts();
   const award = state.players.length ? `
     <div class="award">
-      <div class="award-h">Wer lag richtig? <b>+${pts} ${pts === 1 ? 'Punkt' : 'Punkte'}</b>${round.hints ? ` (${round.hints} ${round.hints === 1 ? 'Tipp' : 'Tipps'} benutzt)` : ''}</div>
+      <div class="award-h">Wer lag richtig? <b>+${pts} ${pts === 1 ? 'Punkt' : 'Punkte'}</b></div>
       <div class="chips">${state.players.map(p => `<button class="chip-btn ${round.awarded?.[p.id] ? 'on' : ''}" data-award="${p.id}">${round.awarded?.[p.id] ? '✓ ' : ''}${esc(p.name)}</button>`).join('')}</div>
     </div>` : '';
   $('#reveal').innerHTML = `
