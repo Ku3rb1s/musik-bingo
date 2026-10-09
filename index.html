@@ -103,7 +103,8 @@ main{max-width:960px;margin:0 auto;padding:0 16px 40px}
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
 
 /* ---------- Spielfläche ---------- */
-.stage{text-align:center;padding:22px 24px 26px;position:relative}
+/* z-index: Die Spielfläche (mit der fixen Bedienleiste darin) muss über Punkteleiste und Verlauf liegen */
+.stage{text-align:center;padding:22px 24px 26px;position:relative;z-index:3}
 .round-meta{display:flex;justify-content:space-between;gap:8px;margin-bottom:18px}
 .pill{font-size:.8rem;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:99px;padding:.35em .85em;white-space:nowrap}
 .cat{display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -360,7 +361,9 @@ body.card-mode>header,body.card-mode>main{display:none}
 .glass::before,.glass::after{content:'';position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none}
 .glass::before{background:var(--g-bg);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur)}
 .glass::after{background:var(--g-sheen)}
-.hbtn,.pill,button.ghost,.chip-btn,.cat-chip,.scorebar .sc{backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);box-shadow:var(--g-hi)}
+/* Unschärfe nur auf großen Flächen – kleine Elemente liegen schon auf Glas (schont das iPhone beim Scrollen) */
+.hbtn{backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur)}
+.hbtn,.pill,button.ghost,.chip-btn,.cat-chip,.scorebar .sc{box-shadow:var(--g-hi)}
 .hbtn{background:var(--g-bg) var(--g-sheen);border-color:var(--g-brd);border-radius:99px}
 .pill{background:var(--g-bg);border-color:var(--g-brd)}
 button.ghost{background:rgba(255,255,255,.09) var(--g-sheen);border-color:var(--g-brd)}
@@ -370,10 +373,10 @@ button.ghost{background:rgba(255,255,255,.09) var(--g-sheen);border-color:var(--
 button.big,button.mini,.seg button.on{background-image:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0) 58%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.15),0 12px 30px -12px var(--accent)}
 button.pink.big{box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 30px -12px var(--accent2)}
-.cat-badge{backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);
+.cat-badge{
   box-shadow:var(--g-hi),0 14px 34px -16px var(--cat);background-image:var(--g-sheen),linear-gradient(135deg,color-mix(in srgb,var(--cat) 24%,transparent),rgba(255,255,255,.03))}
 .cat-icon{background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 60%);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 24px -8px var(--cat)}
-.rv-answer,.rv-song,.award{backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);box-shadow:var(--g-hi)}
+.rv-answer,.rv-song,.award{box-shadow:var(--g-hi)}
 .rv-answer{background-image:var(--g-sheen),linear-gradient(135deg,color-mix(in srgb,var(--cat) 25%,transparent),rgba(255,255,255,.03))}
 .rv-song,.award{background:rgba(255,255,255,.06) var(--g-sheen);border-color:var(--g-brd)}
 /* Menüs als Glasfläche */
@@ -924,9 +927,10 @@ const wakeError = msg => Object.assign(new Error(msg), { wake: true });
 let wakeRetry = null;
 // Die Spotify-App schläft im Hintergrund gern ein → per Knopf öffnen, beim Zurückkommen automatisch weiterspielen
 function offerSpotifyWake(msg) {
+  wakeRetry = round;   // auch wenn Spotify von Hand geöffnet wird, geht es beim Zurückkommen weiter
   toast(msg + ' Öffne kurz Spotify – danach geht es automatisch weiter.', 15000, {
     label: 'Spotify öffnen',
-    fn: () => { wakeRetry = round; location.href = 'spotify://'; },
+    fn: () => { location.href = 'spotify://'; },
   });
 }
 document.addEventListener('visibilitychange', () => {
@@ -1349,7 +1353,9 @@ const Player = {
             if (want === 'auto') {
               const devs = await getDevices().catch(() => []);
               if (devs.length) {
-                this.mode = 'connect'; renderStatus();
+                this.mode = 'connect';
+                this.connectDev = devs.find(x => x.id === state.settings.device) || devs.find(x => x.is_active) || devs[0];
+                renderStatus();
                 toast('Musik läuft über die Spotify-App (Gerät in den Einstellungen wählbar).', 6000);
                 return;
               }
