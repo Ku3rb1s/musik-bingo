@@ -273,7 +273,8 @@ details.cell-d{position:relative}
 
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:rgba(42,35,80,.96);border:1px solid var(--line);
   padding:12px 18px;border-radius:16px;width:max-content;max-width:calc(100vw - 32px);z-index:99;box-shadow:0 14px 40px rgba(0,0,0,.6);
-  opacity:0;visibility:hidden;transition:transform .35s cubic-bezier(.3,1.3,.5,1),opacity .25s,visibility .25s;line-height:1.4;text-align:center}
+  opacity:0;visibility:hidden;transition:transform .35s cubic-bezier(.3,1.3,.5,1),opacity .25s,visibility .25s;line-height:1.4;text-align:center;display:flex;align-items:center;justify-content:center;gap:12px}
+#toast .mini{flex:none;padding:.5em .9em;border-radius:99px;font-size:.88rem}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
 #embedWrap{position:fixed;left:0;bottom:0;width:320px;height:152px;opacity:0;pointer-events:none;z-index:-1}
 
@@ -766,7 +767,7 @@ body.card-mode>header,body.card-mode>main{display:none}
 </dialog>
 
 <div id="embedWrap"><div id="embedHost"></div></div>
-<div id="toast" role="status"></div>
+<div id="toast" role="status"><span id="toastMsg"></span><button id="toastBtn" class="mini hidden"></button></div>
 
 <script>
 'use strict';
@@ -834,10 +835,43 @@ const decadeOf = y => y ? Math.floor(y / 10) * 10 + 'er' : '?';
 
 /* ---------------- UI-Helfer ---------------- */
 let toastT;
-function toast(msg, ms = 3500) {
-  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+// Hinweis unten/oben; optional mit Knopf: action = { label, fn }
+function toast(msg, ms = 3500, action = null) {
+  const el = $('#toast'), btn = $('#toastBtn');
+  $('#toastMsg').textContent = msg;
+  btn.classList.toggle('hidden', !action);
+  if (action) { btn.textContent = action.label; btn.onclick = () => { el.classList.remove('show'); action.fn(); }; }
+  el.classList.add('show');
   clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), ms);
 }
+
+/* ---------------- Bildschirm an lassen & Spotify aufwecken ---------------- */
+let wakeLock = null;
+async function keepScreenOn() {
+  try { if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } } catch {}
+}
+const wakeError = msg => Object.assign(new Error(msg), { wake: true });
+let wakeRetry = null;
+// Die Spotify-App schläft im Hintergrund gern ein → per Knopf öffnen, beim Zurückkommen automatisch weiterspielen
+function offerSpotifyWake(msg) {
+  toast(msg + ' Öffne kurz Spotify – danach geht es automatisch weiter.', 15000, {
+    label: 'Spotify öffnen',
+    fn: () => { wakeRetry = round; location.href = 'spotify://'; },
+  });
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (round) keepScreenOn();
+  if (wakeRetry && wakeRetry === round && round.phase !== 'revealed') {
+    wakeRetry = null;
+    Player.connectDev = null;
+    if (Player.mode !== 'sdk') Player.mode = null;
+    setTimeout(() => playSnippet(), 900);   // Spotify braucht einen Moment, um sich anzumelden
+  }
+});
 // Eigener Ersatz für confirm()/prompt() – manche Browser blockieren die nativen Dialoge.
 function ask(msg, { input = null, ok = 'OK', danger = false } = {}) {
   const d = $('#dlgAsk'), inp = $('#askInput');
@@ -1252,6 +1286,8 @@ const Player = {
                 toast('Musik läuft über die Spotify-App (Gerät in den Einstellungen wählbar).', 6000);
                 return;
               }
+              // iPhone ohne aktive Spotify-App: lieber Spotify aufwecken als nur Vorschau spielen
+              if (!drm) throw wakeError('Die Spotify-App ist gerade nicht aktiv.');
             }
             toast(drm
               ? 'Der Browser-Player konnte nicht starten (' + e.message + ') – es gibt nur Vorschau-Ausschnitte.'
@@ -1259,6 +1295,7 @@ const Player = {
           }
         }
       } catch (e) {
+        if (e.wake) throw e;
         console.warn(e);
         if (want === 'sdk') toast('Browser-Player konnte nicht starten: ' + e.message, 6000);
       }
@@ -1340,9 +1377,8 @@ const Player = {
         await api(`/me/player/play?device_id=${d.id}`, { method: 'PUT', body: JSON.stringify({ uris: [t.uri], position_ms: pos }) });
       } catch (e) {
         this.connectDev = null;
-        throw new Error(e.status === 404
-          ? `„${d.name}“ ist nicht mehr erreichbar – Spotify dort kurz öffnen und etwas abspielen.`
-          : e.message);
+        if (e.status === 404) throw wakeError(`„${d.name}“ ist gerade nicht erreichbar.`);
+        throw e;
       }
     } else {
       this.lastUpdate = null;
@@ -1366,7 +1402,7 @@ const Player = {
     if (this.connectDev) return this.connectDev;
     const devs = await getDevices();
     const d = devs.find(x => x.id === state.settings.device) || devs.find(x => x.is_active) || devs[0];
-    if (!d) throw new Error('Kein Spotify-Gerät gefunden – öffne die Spotify-App und spiel kurz etwas ab.');
+    if (!d) throw wakeError('Kein aktives Spotify-Gerät gefunden.');
     this.connectDev = d; renderStatus();
     return d;
   },
@@ -1385,7 +1421,7 @@ const Player = {
         if (!this.connectDev) return;
         await api(`/me/player/${this.playing ? 'pause' : 'play'}?device_id=${this.connectDev.id}`, { method: 'PUT' });
       } else this.embed?.togglePlay();
-    } catch (e) { if (this.mode === 'connect') toast(e.message); }
+    } catch (e) { if (this.mode === 'connect') { if (e.status === 404) return offerSpotifyWake('Spotify ist gerade nicht erreichbar.'); toast(e.message); } }
     this.playing = !this.playing; renderPlayState();
   },
   async reset() { await this.pause(); this.mode = null; this.connectDev = null; renderStatus(); },
@@ -1414,7 +1450,7 @@ async function nextRound() {
   if (needSongs()) return;
   const cats = state.cats.filter(c => c.enabled);
   if (!cats.length) return toast('Keine Kategorie aktiv – siehe Einstellungen');
-  Player.unlock();
+  Player.unlock(); keepScreenOn();
   stopTimer(); clearTimeout(snippetT);
   let pool = state.tracks.filter(t => !state.played.includes(t.id));
   if (!pool.length) { toast('Alle Songs wurden gespielt – Liste wird neu gemischt 🔀'); state.played = []; pool = state.tracks.slice(); }
@@ -1435,7 +1471,10 @@ async function playSnippet() {
   clearTimeout(snippetT);
   r.snippetDone = false;
   try { await Player.play(r.track, r.pos); }
-  catch (e) { return toast('Wiedergabe-Fehler: ' + e.message, 7000); }
+  catch (e) {
+    if (e.wake) return offerSpotifyWake(e.message);
+    return toast('Wiedergabe-Fehler: ' + e.message, 7000);
+  }
   const lim = +state.settings.limit;
   if (lim) snippetT = setTimeout(() => {
     if (round !== r || r.phase === 'revealed') return;
