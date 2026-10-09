@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d0a1a">
+<title>Musik-Bingo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Musik-Bingo">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0a1a;--card:#17132b;--card2:#211b3d;--glass:rgba(30,24,58,.62);--text:#f5f2ff;--muted:#a49dc6;
+  --accent:#1ed760;--accent2:#ff4fa3;--warn:#ffb020;--danger:#ff5a6a;--line:rgba(255,255,255,.09);
+  --cat:#1ed760;--radius:24px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:Outfit,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--text);min-height:100vh;min-height:100dvh;
+  background:var(--bg);overflow-x:hidden;
+}
+/* weiche, langsam schwebende Farbflächen im Hintergrund */
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:float 22s ease-in-out infinite alternate}
+.bg i:nth-child(1){width:55vmax;height:55vmax;left:-15vmax;top:-20vmax;background:#4a22a0}
+.bg i:nth-child(2){width:45vmax;height:45vmax;right:-15vmax;top:5vmax;background:#8a1458;animation-delay:-8s}
+.bg i:nth-child(3){width:40vmax;height:40vmax;left:20vmax;bottom:-25vmax;background:var(--cat);opacity:.18;transition:background 1s;animation-delay:-14s}
+@keyframes float{to{transform:translate(6vmax,4vmax) scale(1.1)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:0s!important;animation-iteration-count:1!important}}
+
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:14px;padding:.75em 1.25em;background:var(--accent);color:#06150b;font-weight:700;
+  transition:transform .1s,filter .15s,background .2s;display:inline-flex;align-items:center;justify-content:center;gap:.45em;white-space:nowrap}
+button:hover{filter:brightness(1.08)}
+button:active{transform:scale(.96)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.ghost{background:rgba(255,255,255,.06);color:var(--text);font-weight:600;border:1px solid var(--line)}
+button.ghost:hover{background:rgba(255,255,255,.11)}
+button.danger{color:var(--danger)}
+button.pink{background:var(--accent2);color:#fff}
+button.big{font-size:1.15rem;padding:.95em 1.8em;border-radius:18px;box-shadow:0 10px 30px -10px var(--accent)}
+button.pink.big{box-shadow:0 10px 30px -10px var(--accent2)}
+button.icon{background:transparent;color:var(--muted);padding:.4em .6em}
+button.link{background:none;color:var(--muted);padding:0;text-decoration:underline;font-weight:500}
+input,select{background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:12px;padding:.65em .85em;min-width:0}
+select{cursor:pointer}
+input:focus,select:focus{outline:2px solid var(--accent2);outline-offset:1px}
+input[type=range]{padding:0;border:0;background:none;accent-color:var(--accent);cursor:pointer}
+code{background:rgba(0,0,0,.35);padding:.1em .45em;border-radius:6px;font-size:.9em;user-select:all;word-break:break-all}
+a{color:var(--accent)}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+
+/* ---------- Kopfzeile ---------- */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 14px;max-width:960px;margin:0 auto;
+  padding-top:max(18px,env(safe-area-inset-top))}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.45rem;letter-spacing:.3px}
+.logo .mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:1.2rem;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 6px 20px -6px var(--accent2)}
+.logo span{background:linear-gradient(90deg,#fff,#d9cfff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hdr-r{display:flex;gap:8px;align-items:center}
+.hdr-r button{padding:.6em .95em}
+.chip{font-size:.8rem;padding:.4em .85em;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.ok{color:var(--accent);border-color:rgba(30,215,96,.3)}
+
+main{max-width:960px;margin:0 auto;padding:0 16px 40px}
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+
+/* ---------- Spielfläche ---------- */
+.stage{text-align:center;padding:22px 24px 26px;position:relative}
+.round-meta{display:flex;justify-content:space-between;gap:8px;margin-bottom:18px}
+.pill{font-size:.8rem;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:99px;padding:.35em .85em}
+
+.cat{display:flex;flex-direction:column;align-items:center;gap:6px}
+.cat-kicker{text-transform:uppercase;letter-spacing:3px;font-size:.72rem;color:var(--cat);font-weight:800;transition:color .4s}
+.cat-badge{display:inline-flex;align-items:center;gap:14px;padding:12px 24px 12px 14px;border-radius:22px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--cat) 22%,transparent),rgba(255,255,255,.03));
+  border:1px solid color-mix(in srgb,var(--cat) 45%,transparent);transition:background .4s,border-color .4s;max-width:100%}
+.cat-icon{width:52px;height:52px;flex:none;border-radius:16px;display:grid;place-items:center;font-size:1.6rem;background:var(--cat);
+  box-shadow:0 8px 24px -8px var(--cat);transition:background .4s}
+.cat-name{font-size:clamp(1.45rem,5vw,2.5rem);font-weight:900;line-height:1.1;text-align:left;word-break:break-word}
+.cat.idle .cat-badge{background:rgba(255,255,255,.04);border-color:var(--line)}
+.cat.idle .cat-icon{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.cat.spin .cat-name{opacity:.55;filter:blur(1.5px)}
+.cat.land .cat-badge{animation:land .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes land{0%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+/* Schallplatte + Countdown-Ring */
+.disc-wrap{position:relative;width:min(260px,62vw);aspect-ratio:1;margin:26px auto 24px}
+.disc-wrap svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);opacity:0;transition:opacity .3s}
+.disc-wrap.counting svg{opacity:1}
+.disc-wrap circle{fill:none;stroke-width:5}
+.disc-wrap .trk{stroke:rgba(255,255,255,.07)}
+.disc-wrap .ring{stroke:var(--cat);stroke-linecap:round;filter:drop-shadow(0 0 6px var(--cat))}
+.disc-wrap.urgent .ring{stroke:var(--danger);filter:drop-shadow(0 0 8px var(--danger))}
+.disc{position:absolute;inset:9%;border-radius:50%;
+  background:
+    radial-gradient(circle,transparent 0 31%,rgba(255,255,255,.05) 31.5% 32%,transparent 32.5% 40%,rgba(255,255,255,.04) 40.5% 41%,transparent 41.5% 52%,rgba(255,255,255,.05) 52.5% 53%,transparent 53.5% 66%,rgba(255,255,255,.04) 66.5% 67%,transparent 67.5%),
+    conic-gradient(from 30deg,#111 0deg,#2a2a2a 40deg,#111 90deg,#1d1d1d 180deg,#111 230deg,#2a2a2a 270deg,#111 360deg);
+  box-shadow:0 20px 50px -15px rgba(0,0,0,.8),inset 0 0 0 2px rgba(255,255,255,.04);
+  animation:spin 3.2s linear infinite;animation-play-state:paused}
+.disc-wrap.playing .disc{animation-play-state:running}
+@keyframes spin{to{transform:rotate(360deg)}}
+.disc-label{position:absolute;inset:0;margin:auto;width:40%;height:40%;border-radius:50%;
+  background:radial-gradient(circle,var(--bg) 0 7%,transparent 7.5%),linear-gradient(135deg,var(--cat),var(--accent2));transition:background .4s}
+.disc-num{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(2.4rem,9vw,3.6rem);font-weight:900;
+  font-variant-numeric:tabular-nums;text-shadow:0 4px 18px rgba(0,0,0,.7);pointer-events:none}
+.disc-wrap.urgent .disc-num{color:var(--danger);animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.12)}}
+
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.volume{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;color:var(--muted);font-size:.9rem}
+.volume input{width:180px}
+.volume button{font-size:1.1rem}
+.volume.off{opacity:.45}
+.hint{margin:16px 0 0;font-size:.8rem;color:var(--muted)}
+.hint kbd{font-family:inherit;background:rgba(255,255,255,.08);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:.05em .45em}
+
+/* Auflösung */
+.reveal{margin:22px auto 24px;max-width:640px;animation:pop .5s cubic-bezier(.3,1.4,.5,1)}
+@keyframes pop{0%{opacity:0;transform:translateY(14px) scale(.97)}100%{opacity:1;transform:none}}
+.rv-answer{border-radius:20px;padding:16px 18px;margin-bottom:12px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--cat) 25%,transparent),rgba(255,255,255,.03));
+  border:1px solid color-mix(in srgb,var(--cat) 50%,transparent)}
+.rv-q{color:var(--muted);font-size:.85rem}
+.rv-a{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:900;color:var(--cat);margin-top:2px;word-break:break-word;line-height:1.15}
+.rv-a .small{color:var(--muted);font-weight:500}
+.rv-song{display:flex;gap:18px;align-items:center;text-align:left;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:20px;padding:14px}
+.cover{width:132px;height:132px;border-radius:14px;object-fit:cover;background:rgba(0,0,0,.4);flex:none;display:grid;place-items:center;font-size:2.6rem;
+  box-shadow:0 14px 30px -12px rgba(0,0,0,.8)}
+.rv-title{font-size:1.35rem;font-weight:800;line-height:1.2}
+.rv-artist{font-size:1.05rem;color:var(--accent2);font-weight:600;margin:3px 0 6px}
+.rv-meta{color:var(--muted);font-size:.85rem}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
+.tags span{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:99px;padding:.25em .75em;font-size:.8rem}
+
+/* Verlauf */
+.hist{margin-top:16px;padding:6px 20px}
+.hist summary{cursor:pointer;font-weight:700;padding:12px 0;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.hist summary::-webkit-details-marker{display:none}
+.hist summary::after{content:'▾';color:var(--muted);transition:transform .2s}
+.hist[open] summary::after{transform:rotate(180deg)}
+#hist{margin:0 0 12px;padding:0;list-style:none;max-height:340px;overflow:auto}
+#hist li{padding:9px 0;border-top:1px solid var(--line);font-size:.9rem;display:flex;gap:12px;align-items:center}
+#hist li b{color:var(--accent2);min-width:2.4em}
+#hist li img,#hist li .ph{width:38px;height:38px;border-radius:8px;object-fit:cover;flex:none;background:rgba(0,0,0,.3)}
+
+/* ---------- Dialoge ---------- */
+dialog{background:#17132b;color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:0;
+  width:min(680px,calc(100vw - 24px));max-height:calc(100dvh - 40px);box-shadow:0 40px 80px -20px #000}
+dialog[open]{display:flex;flex-direction:column;animation:pop .3s ease}
+dialog::backdrop{background:rgba(5,3,12,.7);backdrop-filter:blur(4px)}
+.dlg-body{padding:24px;overflow:auto;flex:1}
+.dlg-body h2{margin:0 0 16px;font-size:1.5rem}
+.dlg-body h3{margin:0 0 8px;font-size:1.02rem}
+.step{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.step p{margin:.4em 0}
+.step ol{margin:.4em 0;padding-left:1.3em;font-size:.9rem;color:var(--muted)}
+.step ol li{margin:.3em 0}
+.row{display:flex;gap:8px;margin-top:10px}
+.row input{flex:1}
+.dlg-foot{display:flex;justify-content:flex-end;padding:14px 24px;border-top:1px solid var(--line);padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.warn{background:rgba(255,176,32,.1);border:1px solid rgba(255,176,32,.35);color:var(--warn);border-radius:14px;padding:10px 12px;font-size:.88rem;margin-bottom:14px}
+.field{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.field span{display:flex;align-items:center;gap:8px}
+.check{display:flex;gap:10px;align-items:center;padding:9px 0;cursor:pointer}
+.check input{width:19px;height:19px;accent-color:var(--accent);flex:none}
+.catlist{list-style:none;padding:0;margin:0 0 12px}
+.catlist li{display:flex;justify-content:space-between;align-items:center;gap:8px;background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:14px;padding:4px 10px;margin-bottom:6px}
+.catlist .ci{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none;font-size:1rem}
+.catlist small{display:block;color:var(--muted);font-size:.78rem}
+.addcat{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.addcat #newCatName{flex:1 1 220px}
+.addcat #newCatTol{width:80px}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(200%);background:#2a2350;border:1px solid var(--line);
+  padding:12px 18px;border-radius:16px;width:max-content;max-width:calc(100vw - 32px);transition:transform .35s cubic-bezier(.3,1.3,.5,1),opacity .25s,visibility .25s;z-index:99;box-shadow:0 14px 40px rgba(0,0,0,.6);
+  opacity:0;visibility:hidden}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
+/* Embed-Player unsichtbar halten, damit der Song geheim bleibt */
+#embedWrap{position:fixed;left:0;bottom:0;width:320px;height:152px;opacity:0;pointer-events:none;z-index:-1}
+
+/* ---------- Handy ---------- */
+@media (max-width:640px){
+  header{padding:12px 14px 10px;padding-top:max(12px,env(safe-area-inset-top))}
+  .logo{font-size:1.2rem}.logo .mark{width:34px;height:34px}
+  .hdr-r .lbl,#status{display:none}
+  .hdr-r button{padding:.55em .7em;font-size:1.1rem}
+  main{padding:0 12px calc(130px + env(safe-area-inset-bottom))}
+  /* kein backdrop-filter: sonst klebt die fixe Bedienleiste an der Karte statt am Bildschirm */
+  .stage{padding:16px 14px 18px;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(30,24,58,.82)}
+  .cat-badge{padding:10px 16px 10px 10px;gap:10px}
+  .cat-icon{width:44px;height:44px;font-size:1.35rem;border-radius:13px}
+  .disc-wrap{margin:18px auto 6px}
+  /* Bedienleiste unten, gut mit dem Daumen erreichbar */
+  .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px 12px max(12px,env(safe-area-inset-bottom));
+    background:linear-gradient(transparent,rgba(13,10,26,.92) 25%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    display:flex;flex-wrap:wrap;gap:8px}
+  .controls .big{flex:1 1 100%}
+  .controls .ghost{flex:1 1 0;padding:.8em .4em;font-size:.92rem}
+  .volume,.hint{display:none}
+  .reveal{margin:14px auto 6px}
+  .rv-song{flex-direction:column;text-align:center;gap:12px}
+  .tags{justify-content:center}
+  .cover{width:170px;height:170px}
+  .round-meta{margin-bottom:14px}
+  dialog{width:100vw;max-width:100vw;max-height:94dvh;margin:auto 0 0;border-radius:24px 24px 0 0;border-bottom:0}
+  .row{flex-direction:column}
+  .field{flex-wrap:wrap}
+  #toast{bottom:calc(150px + env(safe-area-inset-bottom))}
+}
+@media (pointer:coarse){.volume{display:none}}
+</style>
+</head>
+<body>
+<div class="bg"><i></i><i></i><i></i></div>
+<header>
+  <div class="logo"><div class="mark">🎵</div><span>Musik-Bingo</span></div>
+  <div class="hdr-r">
+    <span id="status" class="chip">–</span>
+    <button id="btnRestart" class="ghost" title="Neues Spiel">🔄<span class="lbl">Neues Spiel</span></button>
+    <button id="btnLib" class="ghost" title="Songs">🎶<span class="lbl">Songs</span></button>
+    <button id="btnSettings" class="ghost" title="Einstellungen">⚙️<span class="lbl">Einstellungen</span></button>
+  </div>
+</header>
+
+<main>
+  <section class="stage glass">
+    <div class="round-meta"><span id="roundNo" class="pill">Runde –</span><span id="remaining" class="pill"></span></div>
+    <div id="cat" class="cat idle">
+      <div id="catLabel" class="cat-kicker">Musik-Bingo</div>
+      <div class="cat-badge"><div id="catIcon" class="cat-icon">🎵</div><div id="catName" class="cat-name">Bereit?</div></div>
+    </div>
+    <div id="discWrap" class="disc-wrap">
+      <svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="56"/><circle id="ring" class="ring" cx="60" cy="60" r="56"/></svg>
+      <div class="disc"><div class="disc-label"></div></div>
+      <div id="timerNum" class="disc-num"></div>
+    </div>
+    <div id="reveal" class="reveal hidden"></div>
+    <div id="controls" class="controls"></div>
+    <div id="volBox" class="volume">
+      <button class="icon" id="volMute" title="Stumm">🔊</button>
+      <input type="range" id="vol" min="0" max="100" step="1" aria-label="Lautstärke">
+      <span id="volVal" style="min-width:3ch;text-align:right"></span>
+    </div>
+    <p class="hint"><kbd>Leertaste</kbd> nächster Schritt · <kbd>↑</kbd><kbd>↓</kbd> Lautstärke</p>
+  </section>
+
+  <details class="hist glass" id="histBox">
+    <summary>Verlauf</summary>
+    <ol id="hist"></ol>
+  </details>
+</main>
+
+<!-- Songs / Spotify -->
+<dialog id="dlgLib">
+  <div class="dlg-body">
+    <h2>🎶 Songs & Spotify</h2>
+    <div id="fileWarn" class="warn hidden">Die Seite wurde direkt als Datei geöffnet. Für den Spotify-Login bitte über <b>start.bat</b> starten (Adresse <code>http://127.0.0.1:8888/</code>).</div>
+
+    <div class="step">
+      <h3>1 · Mit Spotify verbinden</h3>
+      <ol>
+        <li>Auf <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a> einloggen → <b>Create app</b>.</li>
+        <li>Als <b>Redirect URI</b> genau das eintragen: <code id="redirUri"></code></li>
+        <li><b>Web API</b> und <b>Web Playback SDK</b> anhaken, speichern.</li>
+        <li>Die <b>Client ID</b> der App hier einfügen und verbinden.</li>
+      </ol>
+      <div class="row">
+        <input id="clientId" placeholder="Client ID" autocomplete="off" spellcheck="false">
+        <button id="btnLogin">Mit Spotify verbinden</button>
+      </div>
+      <p id="loginState" class="small muted"></p>
+    </div>
+
+    <div class="step">
+      <h3>2 · Playlist hinzufügen</h3>
+      <p class="small muted">Link einer beliebigen Playlist einfügen (Spotify → Teilen → Link kopieren). Mehrere Playlists werden zusammengemischt.</p>
+      <div class="row">
+        <input id="plUrl" placeholder="https://open.spotify.com/playlist/…" spellcheck="false">
+        <button id="btnLoadPl">Hinzufügen</button>
+      </div>
+      <p class="small muted" style="margin-top:12px">Alternativ CSV importieren (z.&nbsp;B. von <a href="https://exportify.app" target="_blank" rel="noopener">exportify.app</a> oder eigene Tabelle mit Spalten <i>Titel, Interpret, Jahr, Spotify-Link</i>):</p>
+      <input type="file" id="csvFile" accept=".csv,.txt">
+    </div>
+
+    <div class="step">
+      <h3>Aktuelle Songliste</h3>
+      <p id="libStats" class="small"></p>
+      <div class="row">
+        <button id="btnNewGame" class="ghost">🔄 Neues Spiel</button>
+        <button id="btnClearLib" class="ghost danger">🗑 Liste leeren</button>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-foot"><button data-close>Fertig</button></div>
+</dialog>
+
+<!-- Einstellungen -->
+<dialog id="dlgSettings">
+  <div class="dlg-body">
+    <h2>⚙️ Einstellungen</h2>
+    <label class="field">Countdown-Zeit
+      <span><input type="range" id="setSec" min="5" max="120" step="5"><b id="secVal" style="min-width:3.5em;text-align:right"></b></span>
+    </label>
+    <label class="field">Startposition im Song
+      <select id="setStart">
+        <option value="begin">Vom Anfang</option>
+        <option value="s30">Ab 0:30 (Intro überspringen)</option>
+        <option value="random">Zufällige Stelle</option>
+      </select>
+    </label>
+    <label class="field">Wiedergabe
+      <select id="setMode">
+        <option value="auto">Automatisch</option>
+        <option value="sdk">Web-Player (Premium, ganze Songs)</option>
+        <option value="connect">Spotify-App / Lautsprecher (Connect)</option>
+        <option value="embed">Spotify-Embed (Vorschau)</option>
+      </select>
+    </label>
+    <div id="devBox" class="hidden">
+      <label class="field">Abspielgerät
+        <span><select id="setDevice"><option value="">– lädt –</option></select><button type="button" class="ghost" id="btnDevRefresh" title="Geräte neu suchen">↻</button></span>
+      </label>
+      <p class="small muted" style="margin:8px 0 4px">Öffne Spotify auf dem Handy, PC, Tablet oder Lautsprecher und spiel kurz etwas ab – dann erscheint das Gerät hier. Ganze Songs, braucht Premium. Achtung: Die Spotify-App selbst zeigt den Titel an – Bildschirm also nicht herzeigen.</p>
+    </div>
+    <label class="check"><input type="checkbox" id="setBeep"> Töne beim Countdown</label>
+    <label class="check"><input type="checkbox" id="setAuto"> Nach Ablauf automatisch auflösen</label>
+    <label class="check"><input type="checkbox" id="setPause"> Musik bei Auflösung pausieren</label>
+
+    <h3 style="margin-top:20px">Kategorien</h3>
+    <p class="small muted" style="margin-top:0">Pro Runde wird zufällig eine aktive Kategorie gezogen.</p>
+    <ul id="catList" class="catlist"></ul>
+    <div class="addcat">
+      <input id="newCatName" placeholder="Neue Frage, z. B. „Aus welchem Album?“">
+      <select id="newCatType"></select>
+      <input id="newCatTol" type="number" min="1" max="30" value="5" class="hidden" title="Toleranz ± Jahre">
+      <button id="btnAddCat">+ Hinzufügen</button>
+    </div>
+    <button id="btnResetCats" class="link small">Standard-Kategorien wiederherstellen</button>
+  </div>
+  <div class="dlg-foot"><button data-close>Fertig</button></div>
+</dialog>
+
+<dialog id="dlgAsk" style="width:min(440px,calc(100vw - 24px))">
+  <form method="dialog" class="dlg-body">
+    <p id="askMsg" style="margin:0 0 14px;white-space:pre-line"></p>
+    <input id="askInput" class="hidden" style="width:100%;margin-bottom:14px" inputmode="numeric">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button value="no" class="ghost" formnovalidate>Abbrechen</button>
+      <button value="yes" id="askOk">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="embedWrap"><div id="embedHost"></div></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('mb_' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('mb_' + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem('mb_' + k); } catch {} },
+};
+
+const TOKEN_URL = 'https://accounts.spotify.com/api/token';
+const SCOPES = 'streaming user-read-email user-read-private playlist-read-private playlist-read-collaborative user-read-playback-state user-modify-playback-state';
+const REDIRECT = location.origin + location.pathname.replace(/index\.html$/, '');
+
+const DEFAULT_CATS = [
+  { id: 'title',  name: 'Titel des Songs',            answer: 'title',  enabled: true, builtin: true },
+  { id: 'year',   name: 'Genaues Erscheinungsjahr',   answer: 'year',   enabled: true, builtin: true },
+  { id: 'artist', name: 'Band / Sänger(in)',          answer: 'artist', enabled: true, builtin: true },
+  { id: 'decade', name: 'Aus welchem Jahrzehnt?',     answer: 'decade', enabled: true, builtin: true },
+  { id: 'range3', name: 'Erscheinungsjahr ± 3 Jahre', answer: 'range', tol: 3, enabled: true, builtin: true },
+];
+const ANSWER_TYPES = {
+  title: 'Songtitel', artist: 'Interpret', year: 'Genaues Jahr', decade: 'Jahrzehnt',
+  range: 'Jahr ± Toleranz', album: 'Album', none: 'Freie Frage (alle Infos)',
+};
+const CAT_STYLE = {
+  title: ['🎵', '#1ed760'], artist: ['🎤', '#ff4fa3'], year: ['📅', '#ffb020'], decade: ['🕰️', '#8b6cff'],
+  range: ['🎯', '#22d3ee'], album: ['💿', '#ff8a3d'], none: ['❓', '#a3e635'],
+};
+const catStyle = c => CAT_STYLE[c?.answer] || CAT_STYLE.none;
+
+const state = {
+  clientId: LS.get('clientId', ''),
+  tok: LS.get('tok', null),
+  tracks: LS.get('tracks', []),
+  played: LS.get('played', []),
+  cats: LS.get('cats', null) || structuredClone(DEFAULT_CATS),
+  settings: Object.assign({ seconds: 30, start: 'begin', beep: true, autoReveal: true, pauseOnReveal: false, mode: 'auto', volume: 80 }, LS.get('settings', {})),
+  yearFix: LS.get('yearFix', {}),
+  history: LS.get('history', []),
+};
+let round = null;      // { n, track, cat, phase: 'playing'|'countdown'|'revealed', timeUp }
+let spinning = false;
+
+const yearOf = t => state.yearFix[t.id] ?? t.year ?? null;
+const decadeOf = y => y ? Math.floor(y / 10) * 10 + 'er' : '?';
+
+/* ---------------- UI-Helfer ---------------- */
+let toastT;
+function toast(msg, ms = 3500) {
+  const el = $('#toast'); el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), ms);
+}
+// Eigener Ersatz für confirm()/prompt() – manche Browser blockieren die nativen Dialoge.
+function ask(msg, { input = null, ok = 'OK' } = {}) {
+  const d = $('#dlgAsk'), inp = $('#askInput');
+  $('#askMsg').textContent = msg; $('#askOk').textContent = ok;
+  inp.classList.toggle('hidden', input == null); inp.value = input ?? '';
+  d.returnValue = '';
+  d.showModal(); if (input != null) inp.select();
+  return new Promise(res => d.addEventListener('close', () => {
+    const yes = d.returnValue === 'yes';
+    res(input == null ? yes : (yes ? inp.value : null));
+  }, { once: true }));
+}
+let actx;
+function beep(freq = 880, dur = .15, vol = .2) {
+  if (!state.settings.beep) return;
+  try {
+    actx = actx || new AudioContext();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = freq; o.type = 'sine';
+    g.gain.setValueAtTime(vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + dur);
+    o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + dur);
+  } catch {}
+}
+
+/* ---------------- Spotify Auth (PKCE) ---------------- */
+function randStr(n) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from(crypto.getRandomValues(new Uint8Array(n)), b => chars[b % chars.length]).join('');
+}
+async function pkceChallenge(v) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
+  return btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function login() {
+  const cid = $('#clientId').value.trim();
+  if (!cid) return toast('Bitte zuerst die Client ID eintragen');
+  state.clientId = cid; LS.set('clientId', cid);
+  const verifier = randStr(64); LS.set('verifier', verifier);
+  const p = new URLSearchParams({
+    client_id: cid, response_type: 'code', redirect_uri: REDIRECT,
+    code_challenge_method: 'S256', code_challenge: await pkceChallenge(verifier), scope: SCOPES,
+  });
+  location.href = 'https://accounts.spotify.com/authorize?' + p;
+}
+function setTok(j) {
+  state.tok = { access_token: j.access_token, refresh_token: j.refresh_token || state.tok?.refresh_token, exp: Date.now() + (j.expires_in - 60) * 1000 };
+  LS.set('tok', state.tok);
+}
+async function handleCallback() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('code') && !q.has('error')) return;
+  history.replaceState(null, '', REDIRECT);
+  if (q.get('error')) return toast('Spotify-Login abgebrochen: ' + q.get('error'));
+  const r = await fetch(TOKEN_URL, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: REDIRECT, client_id: state.clientId, code_verifier: LS.get('verifier', '') }),
+  });
+  const j = await r.json();
+  if (!r.ok) return toast('Login fehlgeschlagen: ' + (j.error_description || j.error), 6000);
+  setTok(j); LS.del('verifier');
+  toast('Mit Spotify verbunden ✔');
+}
+let refreshing = null;
+async function ensureToken() {
+  if (!state.tok) throw new Error('Nicht mit Spotify verbunden');
+  if (Date.now() < state.tok.exp) return;
+  refreshing ??= (async () => {
+    const r = await fetch(TOKEN_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: state.tok.refresh_token, client_id: state.clientId }),
+    });
+    const j = await r.json();
+    if (!r.ok) { state.tok = null; LS.del('tok'); renderStatus(); throw new Error('Sitzung abgelaufen – bitte neu verbinden'); }
+    setTok(j);
+  })().finally(() => refreshing = null);
+  return refreshing;
+}
+async function api(path, opts = {}, retry = true) {
+  await ensureToken();
+  const url = path.startsWith('http') ? path : 'https://api.spotify.com/v1' + path;
+  const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + state.tok.access_token, ...(opts.body ? { 'Content-Type': 'application/json' } : {}) } });
+  if (r.status === 401 && retry) { state.tok.exp = 0; return api(path, opts, false); }
+  if (r.status === 429 && retry) { await sleep((+r.headers.get('Retry-After') || 2) * 1000); return api(path, opts, false); }
+  if (!r.ok) {
+    let m = 'HTTP ' + r.status;
+    try { const j = await r.json(); m = j.error?.message || j.error_description || m; } catch {}
+    const e = new Error(m); e.status = r.status; throw e;
+  }
+  const txt = await r.text();
+  try { return txt ? JSON.parse(txt) : null; } catch { return null; }
+}
+
+/* ---------------- Songs laden ---------------- */
+function normTrack(t) {
+  const date = t.album?.release_date || '';
+  return {
+    id: t.id, uri: t.uri, title: t.name,
+    artists: (t.artists || []).map(a => a.name).join(', '),
+    album: t.album?.name || '', date, year: parseInt(date) || null,
+    cover: t.album?.images?.[0]?.url || '', duration: t.duration_ms || 0,
+  };
+}
+function mergeTracks(list) {
+  const have = new Set(state.tracks.map(t => t.id));
+  let added = 0;
+  for (const t of list) if (t.id && !have.has(t.id)) { state.tracks.push(t); have.add(t.id); added++; }
+  LS.set('tracks', state.tracks);
+  renderAll();
+  return added;
+}
+function parsePlaylistId(s) {
+  s = s.trim();
+  const m = s.match(/playlist[/:]([A-Za-z0-9]{22})/);
+  if (m) return m[1];
+  return /^[A-Za-z0-9]{22}$/.test(s) ? s : null;
+}
+async function addPlaylist() {
+  const id = parsePlaylistId($('#plUrl').value);
+  if (!id) return toast('Das sieht nicht nach einem Playlist-Link aus');
+  if (!state.tok) return toast('Bitte zuerst mit Spotify verbinden (oder CSV importieren)');
+  const btn = $('#btnLoadPl'); btn.disabled = true; btn.textContent = 'Lade…';
+  try {
+    let page;
+    try { page = await api(`/playlists/${id}/items?limit=50`); }
+    catch (e) { if (e.status === 401) throw e; page = await api(`/playlists/${id}/tracks?limit=50`); }
+    const out = [];
+    while (page) {
+      for (const it of page.items || []) {
+        const t = it.item || it.track;
+        if (t && t.type === 'track' && !t.is_local && t.id) out.push(normTrack(t));
+      }
+      $('#libStats').textContent = `Lade… ${out.length} Songs`;
+      page = page.next ? await api(page.next) : null;
+    }
+    const added = mergeTracks(out);
+    $('#plUrl').value = '';
+    toast(`${added} neue Songs hinzugefügt (${out.length} in der Playlist)`);
+  } catch (e) {
+    toast('Playlist konnte nicht geladen werden: ' + e.message +
+      (e.status === 403 || e.status === 404 ? ' – Spotify erlaubt Entwickler-Apps teils nur eigene Playlists. Tipp: Playlist in deine Bibliothek kopieren oder CSV-Import nutzen.' : ''), 9000);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Hinzufügen'; renderLib();
+  }
+}
+
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const firstLine = text.split(/\r?\n/)[0];
+  const delim = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ',';
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; }
+      else f += c;
+    } else if (c === '"') q = true;
+    else if (c === delim) { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(f); f = ''; if (row.some(x => x.trim())) rows.push(row); row = [];
+    } else f += c;
+  }
+  row.push(f); if (row.some(x => x.trim())) rows.push(row);
+  return rows;
+}
+function importCSV(text) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) return toast('CSV ist leer');
+  const h = rows[0].map(x => x.trim().toLowerCase());
+  const find = (...tests) => {
+    for (const t of tests) {
+      const i = h.findIndex(x => typeof t === 'string' ? x === t : t.test(x));
+      if (i >= 0) return i;
+    }
+    return -1;
+  };
+  const iUri = find(/^track uri/, 'uri', 'spotify uri', 'spotify-link', 'spotify link', 'link', /spotify/);
+  const iTitle = find(/^track name/, 'titel', 'title', 'song', 'name');
+  const iArtist = find(/^artist name/, 'interpret', 'artist', 'artists', 'künstler', 'band', 'sänger');
+  const iYear = find(/album release date/, /release date/, 'jahr', 'year', 'erscheinungsjahr');
+  const iAlbum = find(/^album name/, 'album');
+  const iDur = find(/duration/);
+  const iImg = find(/image url/, 'cover');
+  if (iUri < 0 || iTitle < 0) return toast('CSV braucht mindestens die Spalten Titel und Spotify-Link/URI', 6000);
+  const out = [];
+  for (const r of rows.slice(1)) {
+    const m = (r[iUri] || '').match(/track[/:]([A-Za-z0-9]{22})/);
+    if (!m) continue;
+    const date = iYear >= 0 ? (r[iYear] || '').trim() : '';
+    out.push({
+      id: m[1], uri: 'spotify:track:' + m[1], title: (r[iTitle] || '').trim(),
+      artists: iArtist >= 0 ? (r[iArtist] || '').replace(/\s*;\s*/g, ', ').trim() : '',
+      album: iAlbum >= 0 ? (r[iAlbum] || '').trim() : '', date,
+      year: parseInt(date.match(/\d{4}/)?.[0]) || null,
+      cover: iImg >= 0 ? (r[iImg] || '').trim() : '', duration: iDur >= 0 ? (parseInt(r[iDur]) || 0) : 0,
+    });
+  }
+  const added = mergeTracks(out);
+  toast(`${added} Songs aus CSV importiert`);
+}
+
+/* ---------------- Wiedergabe ---------------- */
+async function getDevices() {
+  const r = await api('/me/player/devices');
+  return (r?.devices || []).filter(d => d.id && !d.is_restricted && d.name !== 'Musik-Bingo');
+}
+async function hasWidevine() {
+  try {
+    await navigator.requestMediaKeySystemAccess('com.widevine.alpha', [{ audioCapabilities: [{ contentType: 'audio/mp4;codecs="mp4a.40.2"' }] }]);
+    return true;
+  } catch { return false; }
+}
+const Player = {
+  mode: null, sdk: null, deviceId: null, embed: null, embedReady: null, sdkReady: null, playing: false,
+
+  unlock() {
+    try { this.sdk?.activateElement(); } catch {}
+    // iOS erlaubt Töne nur, wenn der AudioContext direkt bei einem Tippen entsteht
+    try { actx = actx || new AudioContext(); actx.resume(); } catch {}
+  },
+
+  async ensure() {
+    if (this.mode) return;
+    const want = state.settings.mode;
+    if (want === 'connect') { this.mode = 'connect'; renderStatus(); return; }
+    if (want !== 'embed' && state.tok) {
+      try {
+        const me = await api('/me');
+        if (me.product !== 'premium') {
+          if (want === 'sdk') toast('Web-Player braucht Spotify Premium – nutze Embed');
+        } else {
+          const drm = await hasWidevine();
+          try {
+            if (!drm) throw new Error('kein DRM');
+            await this.initSdk(); this.mode = 'sdk'; renderStatus(); return;
+          } catch (e) {
+            // Browser kann nicht selbst abspielen (z. B. iPhone) → über die Spotify-App steuern
+            if (want === 'auto') {
+              const devs = await getDevices().catch(() => []);
+              if (devs.length) {
+                this.mode = 'connect'; renderStatus();
+                toast('Musik läuft über Spotify Connect (Gerät in den Einstellungen wählbar).', 6000);
+                return;
+              }
+            }
+            toast(drm
+              ? 'Spotify-Web-Player konnte nicht starten (' + e.message + ') – nutze Embed.'
+              : 'Dieser Browser kann nicht selbst abspielen. Tipp: Spotify-App öffnen, kurz etwas abspielen und in den Einstellungen „Spotify-App / Lautsprecher“ wählen – sonst gibt es nur Vorschau-Ausschnitte.', 11000);
+          }
+        }
+      } catch (e) {
+        console.warn(e);
+        if (want === 'sdk') toast('Web-Player konnte nicht starten: ' + e.message, 6000);
+      }
+    }
+    await this.initEmbed();
+    this.mode = 'embed'; renderStatus();
+  },
+
+  initSdk() {
+    if (this.sdkReady) return this.sdkReady;
+    this.sdkReady = new Promise((res, rej) => {
+      const to = setTimeout(() => rej(new Error('Zeitüberschreitung')), 15000);
+      window.onSpotifyWebPlaybackSDKReady = () => {
+        const p = new Spotify.Player({
+          name: 'Musik-Bingo', volume: state.settings.volume / 100,
+          getOAuthToken: cb => ensureToken().then(() => cb(state.tok.access_token)).catch(e => toast(e.message)),
+        });
+        p.addListener('ready', ({ device_id }) => { this.deviceId = device_id; clearTimeout(to); res(); });
+        p.addListener('initialization_error', ({ message }) => rej(new Error(message)));
+        p.addListener('authentication_error', ({ message }) => rej(new Error(message)));
+        p.addListener('account_error', ({ message }) => rej(new Error(message)));
+        p.addListener('player_state_changed', s => { this.playing = !!s && !s.paused; renderPlayState(); });
+        p.connect();
+        this.sdk = p;
+      };
+      const s = document.createElement('script');
+      s.src = 'https://sdk.scdn.co/spotify-player.js';
+      s.onerror = () => rej(new Error('SDK nicht ladbar'));
+      document.head.appendChild(s);
+    }).catch(e => { this.sdkReady = null; throw e; });
+    return this.sdkReady;
+  },
+
+  initEmbed() {
+    if (this.embedReady) return this.embedReady;
+    this.embedReady = new Promise((res, rej) => {
+      const to = setTimeout(() => rej(new Error('Spotify-Embed lädt nicht')), 15000);
+      window.onSpotifyIframeApiReady = API => {
+        const uri = state.tracks[0]?.uri || 'spotify:track:4uLU6hMCjMI75M1A2tKUQC';
+        API.createController($('#embedHost'), { uri, width: 320, height: 152 }, c => {
+          this.embed = c;
+          c.addListener('playback_update', e => { this.lastUpdate = e.data; this.playing = !e.data.isPaused; renderPlayState(); });
+          clearTimeout(to); res();
+        });
+      };
+      const s = document.createElement('script');
+      s.src = 'https://open.spotify.com/embed/iframe-api/v1';
+      s.onerror = () => rej(new Error('Spotify-Embed nicht ladbar'));
+      document.head.appendChild(s);
+    }).catch(e => { this.embedReady = null; throw e; });
+    return this.embedReady;
+  },
+
+  startMs(t) {
+    const d = t.duration || 0;
+    if (state.settings.start === 's30') return d && d < 45000 ? 0 : 30000;
+    if (state.settings.start === 'random') return d ? Math.floor(d * (.15 + Math.random() * .45)) : 30000;
+    return 0;
+  },
+
+  async play(t) {
+    await this.ensure();
+    const pos = this.startMs(t);
+    if (this.mode === 'sdk') {
+      await api(`/me/player/play?device_id=${this.deviceId}`, { method: 'PUT', body: JSON.stringify({ uris: [t.uri], position_ms: pos }) });
+      if (pos) {
+        // position_ms wird beim ersten Abspielen manchmal ignoriert → nachträglich springen
+        for (let i = 0; i < 10; i++) {
+          await sleep(300);
+          const s = await this.sdk.getCurrentState().catch(() => null);
+          if (s?.track_window?.current_track?.id === t.id || s?.track_window?.current_track?.uri === t.uri) {
+            if (Math.abs(s.position - pos) > 3000) await this.sdk.seek(pos);
+            break;
+          }
+        }
+      }
+    } else if (this.mode === 'connect') {
+      const d = await this.connectDevice();
+      try {
+        await api(`/me/player/play?device_id=${d.id}`, { method: 'PUT', body: JSON.stringify({ uris: [t.uri], position_ms: pos }) });
+      } catch (e) {
+        this.connectDev = null;
+        throw new Error(e.status === 404
+          ? `„${d.name}“ ist nicht mehr erreichbar – Spotify dort kurz öffnen und etwas abspielen.`
+          : e.message);
+      }
+    } else {
+      this.lastUpdate = null;
+      this.embed.loadUri(t.uri);
+      await sleep(700);
+      this.embed.play();
+      if (pos) {
+        // warten, bis der Embed die echte Länge meldet
+        for (let i = 0; i < 15 && !(this.lastUpdate?.duration > 0 && !this.lastUpdate.isBuffering); i++) await sleep(200);
+        const d = this.lastUpdate?.duration || 0;
+        this.preview = d > 0 && d < 35000;
+        if (this.preview) {
+          if (!this.previewWarned) { this.previewWarned = true; toast('Embed spielt nur Vorschau-Ausschnitte – Startposition wird ignoriert. Für ganze Songs Chrome/Edge mit Spotify Premium nutzen.', 9000); }
+          renderStatus();
+        } else if (d) this.embed.seek(Math.min(pos, d - 15000) / 1000);
+      }
+    }
+    this.playing = true; renderPlayState();
+  },
+  async connectDevice() {
+    if (this.connectDev) return this.connectDev;
+    const devs = await getDevices();
+    const d = devs.find(x => x.id === state.settings.device) || devs.find(x => x.is_active) || devs[0];
+    if (!d) throw new Error('Kein Spotify-Gerät gefunden – öffne Spotify auf Handy, PC oder Lautsprecher und spiel kurz etwas ab.');
+    this.connectDev = d; renderStatus();
+    return d;
+  },
+  async pause() {
+    try {
+      if (this.mode === 'sdk') await this.sdk.pause();
+      else if (this.mode === 'connect') { if (this.playing && this.connectDev) await api(`/me/player/pause?device_id=${this.connectDev.id}`, { method: 'PUT' }); }
+      else this.embed?.pause();
+    } catch {}
+    this.playing = false; renderPlayState();
+  },
+  async toggle() {
+    try {
+      if (this.mode === 'sdk') await this.sdk.togglePlay();
+      else if (this.mode === 'connect') {
+        if (!this.connectDev) return;
+        await api(`/me/player/${this.playing ? 'pause' : 'play'}?device_id=${this.connectDev.id}`, { method: 'PUT' });
+      } else this.embed?.togglePlay();
+    } catch (e) { if (this.mode === 'connect') toast(e.message); }
+    this.playing = !this.playing; renderPlayState();
+  },
+  async reset() { await this.pause(); this.mode = null; this.connectDev = null; renderStatus(); },
+  setVolume(v) {
+    // Der Spotify-Embed bietet keine Lautstärke-Steuerung – nur Web-Player und Connect.
+    try {
+      if (this.mode === 'sdk') this.sdk.setVolume(Math.max(v, 0.0001) / 100);
+      else if (this.mode === 'connect' && this.connectDev?.supports_volume) {
+        clearTimeout(this.volT);
+        this.volT = setTimeout(() => api(`/me/player/volume?volume_percent=${v}&device_id=${this.connectDev.id}`, { method: 'PUT' }).catch(() => {}), 250);
+      }
+    } catch {}
+  },
+};
+
+/* ---------------- Spielablauf ---------------- */
+let timerIv = null;
+function stopTimer() { clearInterval(timerIv); timerIv = null; }
+
+async function nextRound() {
+  if (!state.tracks.length) return openLib();
+  const cats = state.cats.filter(c => c.enabled);
+  if (!cats.length) return toast('Keine Kategorie aktiv – siehe Einstellungen');
+  Player.unlock();
+  stopTimer();
+  let pool = state.tracks.filter(t => !state.played.includes(t.id));
+  if (!pool.length) { toast('Alle Songs wurden gespielt – Liste wird neu gemischt 🔀'); state.played = []; pool = state.tracks.slice(); }
+  const track = pool[Math.floor(Math.random() * pool.length)];
+  const cat = cats[Math.floor(Math.random() * cats.length)];
+  state.played.push(track.id); LS.set('played', state.played);
+  round = { n: state.history.length + 1, track, cat, phase: 'playing' };
+  spinCategory(cat);
+  render();
+  try { await Player.play(track); }
+  catch (e) { toast('Wiedergabe-Fehler: ' + e.message, 7000); }
+}
+
+function showCat(c) {
+  const [icon, color] = catStyle(c);
+  $('#catName').textContent = c.name; $('#catIcon').textContent = icon;
+  document.documentElement.style.setProperty('--cat', color);
+}
+function spinCategory(final) {
+  const cats = state.cats.filter(c => c.enabled);
+  const box = $('#cat');
+  spinning = true; box.classList.remove('idle'); box.classList.add('spin');
+  let i = Math.floor(Math.random() * cats.length);
+  const iv = setInterval(() => { showCat(cats[i++ % cats.length]); beep(300 + (i % 5) * 60, .03, .05); }, 85);
+  setTimeout(() => {
+    clearInterval(iv); spinning = false;
+    showCat(final); box.classList.remove('spin');
+    box.classList.add('land'); setTimeout(() => box.classList.remove('land'), 550);
+    beep(660, .15);
+  }, 1100);
+}
+
+function startCountdown() {
+  if (!round || round.phase !== 'playing') return;
+  round.phase = 'countdown'; round.timeUp = false;
+  const total = state.settings.seconds * 1000, end = Date.now() + total;
+  const ring = $('#ring'), C = 2 * Math.PI * 56;
+  ring.style.strokeDasharray = C;
+  let lastSec = null;
+  render();
+  const tick = () => {
+    const rem = Math.max(0, end - Date.now()), s = Math.ceil(rem / 1000);
+    $('#timerNum').textContent = s;
+    ring.style.strokeDashoffset = C * (1 - rem / total);
+    $('#discWrap').classList.toggle('urgent', s <= 5);
+    if (s !== lastSec) { if (s <= 3 && s > 0) beep(880, .08); lastSec = s; }
+    if (rem <= 0) {
+      stopTimer(); beep(440, .7, .3);
+      if (state.settings.autoReveal) reveal();
+      else { round.timeUp = true; $('#timerNum').textContent = '⏰'; render(); }
+    }
+  };
+  tick(); timerIv = setInterval(tick, 100);
+}
+
+function reveal() {
+  if (!round || round.phase === 'revealed') return;
+  stopTimer();
+  round.phase = 'revealed';
+  const t = round.track;
+  state.history.unshift({ n: round.n, cat: round.cat.name, title: t.title, artists: t.artists, year: yearOf(t), id: t.id });
+  state.history = state.history.slice(0, 300); LS.set('history', state.history);
+  if (state.settings.pauseOnReveal) Player.pause();
+  beep(1046, .25);
+  render(); renderHist();
+}
+
+function answerFor(cat, t) {
+  const y = yearOf(t);
+  switch (cat.answer) {
+    case 'title': return esc(t.title);
+    case 'artist': return esc(t.artists);
+    case 'year': return y ?? '?';
+    case 'decade': return decadeOf(y);
+    case 'range': return y ? `${y} <span class="small muted">(richtig: ${y - cat.tol}–${y + cat.tol})</span>` : '?';
+    case 'album': return esc(t.album || '?');
+    default: return `${esc(t.artists)} – ${esc(t.title)}`;
+  }
+}
+
+async function fixYear() {
+  const t = round?.track; if (!t) return;
+  const v = await ask(`Richtiges Erscheinungsjahr für „${t.title}“?\n(Spotify liefert das Datum des Albums – bei Best-of/Remaster oft falsch)`, { input: String(yearOf(t) ?? ''), ok: 'Speichern' });
+  if (v == null) return;
+  const y = parseInt(v);
+  if (!y || y < 1000 || y > 2100) return toast('Ungültiges Jahr');
+  state.yearFix[t.id] = y; LS.set('yearFix', state.yearFix);
+  if (state.history[0]?.title === t.title) { state.history[0].year = y; LS.set('history', state.history); }
+  render(); renderHist();
+}
+
+async function loadCover(t) {
+  if (t.cover || t._coverTried) return;
+  t._coverTried = true;
+  try {
+    const r = await fetch('https://open.spotify.com/oembed?url=' + encodeURIComponent('https://open.spotify.com/track/' + t.id));
+    const j = await r.json();
+    if (j.thumbnail_url) { t.cover = j.thumbnail_url; LS.set('tracks', state.tracks); if (round?.track === t && round.phase === 'revealed') renderReveal(); }
+  } catch {}
+}
+
+/* ---------------- Rendering ---------------- */
+function render() {
+  const ph = round?.phase || 'idle';
+  $('#roundNo').textContent = round ? `Runde ${round.n}` : 'Runde –';
+  const left = state.tracks.filter(t => !state.played.includes(t.id)).length;
+  $('#remaining').textContent = state.tracks.length ? `${left} von ${state.tracks.length} Songs übrig` : 'Keine Songs geladen';
+  $('#catLabel').textContent = round ? 'Kategorie dieser Runde' : 'Musik-Bingo';
+  $('#cat').classList.toggle('idle', !round);
+  if (!spinning) {
+    if (round) showCat(round.cat);
+    else {
+      $('#catIcon').textContent = '🎵';
+      document.documentElement.style.setProperty('--cat', '#1ed760');
+      $('#catName').textContent = !state.tracks.length ? 'Lade zuerst eine Playlist'
+        : state.history.length ? `${state.history.length} ${state.history.length === 1 ? 'Runde' : 'Runden'} gespielt` : 'Bereit für das Spiel?';
+    }
+  }
+  const dw = $('#discWrap');
+  dw.classList.toggle('hidden', ph === 'revealed');
+  dw.classList.toggle('counting', ph === 'countdown');
+  if (ph !== 'countdown') { dw.classList.remove('urgent'); $('#timerNum').textContent = ph === 'playing' ? '?' : ''; }
+  $('#reveal').classList.toggle('hidden', ph !== 'revealed');
+  if (ph === 'revealed') renderReveal();
+
+  const pp = `<button class="ghost" data-act="toggle" id="ppBtn"></button>`;
+  const c = {
+    idle: !state.tracks.length
+      ? `<button class="big" data-act="lib">🎶 Playlist laden</button>`
+      : state.history.length
+        ? `<button class="big" data-act="start">🎮 Neues Spiel starten</button><button class="ghost" data-act="next">▶ Weiterspielen</button>`
+        : `<button class="big" data-act="start">🎮 Spiel starten</button>`,
+    playing: `<button class="big" data-act="countdown">⏱ Countdown starten · ${state.settings.seconds} s</button>
+              ${pp}<button class="ghost" data-act="reveal">👁 Auflösen</button><button class="ghost" data-act="next">⏭ Skip</button>`,
+    countdown: `<button class="big pink" data-act="reveal">👁 Jetzt auflösen</button>${pp}`,
+    revealed: `<button class="big" data-act="next">⏭ Nächster Song</button>${pp}`,
+  }[ph];
+  $('#controls').innerHTML = c;
+  renderPlayState();
+}
+function renderPlayState() {
+  $('#discWrap').classList.toggle('playing', Player.playing && !!round);
+  const b = $('#ppBtn'); if (b) b.textContent = Player.playing ? '⏸ Pause' : '▶ Play';
+}
+function renderReveal() {
+  const t = round.track, y = yearOf(t), cat = round.cat;
+  const fixed = state.yearFix[t.id] != null;
+  $('#reveal').innerHTML = `
+    <div class="rv-answer">
+      <div class="rv-q">${esc(cat.name)}</div>
+      <div class="rv-a">${answerFor(cat, t)}</div>
+    </div>
+    <div class="rv-song">
+      ${t.cover ? `<img class="cover" src="${esc(t.cover)}" alt="">` : `<div class="cover">💿</div>`}
+      <div style="min-width:0">
+        <div class="rv-title">${esc(t.title)}</div>
+        <div class="rv-artist">${esc(t.artists)}</div>
+        <div class="rv-meta">${t.album ? '💿 ' + esc(t.album) : ''}${t.date ? ' · ' + esc(t.date) : ''}</div>
+        <div class="tags">
+          <span>📅 ${y ?? '?'}${fixed ? ' (korrigiert)' : ''}</span>
+          <span>🕰 ${decadeOf(y)}</span>
+          ${y ? `<span>± 3: ${y - 3}–${y + 3}</span>` : ''}
+        </div>
+        <button class="link small" data-act="fixYear">Jahr korrigieren</button>
+      </div>
+    </div>`;
+  loadCover(t);
+}
+function renderHist() {
+  const byId = new Map(state.tracks.map(t => [t.id, t]));
+  $('#hist').innerHTML = state.history.map(h => {
+    const cover = byId.get(h.id)?.cover;
+    return `<li><b>#${h.n}</b>${cover ? `<img src="${esc(cover)}" alt="" loading="lazy">` : '<span class="ph"></span>'}
+      <span><span class="muted small">${esc(h.cat)}</span><br>${esc(h.artists)} – ${esc(h.title)} <span class="muted">(${h.year ?? '?'})</span></span></li>`;
+  }).join('') || '<li class="muted">Noch keine Runden gespielt</li>';
+}
+function renderStatus() {
+  const el = $('#status');
+  const parts = [];
+  parts.push(state.tok ? 'Spotify ✔' : 'Nicht verbunden');
+  if (Player.mode) parts.push(
+    Player.mode === 'sdk' ? 'Web-Player'
+    : Player.mode === 'connect' ? '📡 ' + (Player.connectDev?.name || 'Connect')
+    : Player.preview ? 'Embed (nur Vorschau)' : 'Embed');
+  parts.push(state.tracks.length + ' Songs');
+  el.textContent = parts.join(' · ');
+  el.classList.toggle('ok', !!state.tok);
+  renderVolume();
+  const ls = $('#loginState');
+  if (ls) ls.textContent = state.tok ? '✔ Verbunden. Du kannst jetzt Playlists hinzufügen.' : '';
+  $('#btnLogin').textContent = state.tok ? 'Neu verbinden' : 'Mit Spotify verbinden';
+}
+function renderVolume() {
+  const v = state.settings.volume;
+  const off = Player.mode === 'embed' || (Player.mode === 'connect' && Player.connectDev && !Player.connectDev.supports_volume);
+  $('#vol').value = v; $('#volVal').textContent = v;
+  $('#volMute').textContent = v === 0 ? '🔇' : v < 40 ? '🔈' : v < 75 ? '🔉' : '🔊';
+  $('#volBox').classList.toggle('off', off);
+  $('#vol').disabled = off; $('#volMute').disabled = off;
+  $('#volBox').title = off ? 'Lautstärke lässt sich hier nicht steuern – bitte die Lautstärke am Gerät nutzen.' : '';
+}
+let lastVol = 80;
+function setVolume(v) {
+  v = Math.max(0, Math.min(100, Math.round(v)));
+  if (v > 0) lastVol = v;
+  state.settings.volume = v; LS.set('settings', state.settings);
+  Player.setVolume(v); renderVolume();
+}
+function renderLib() {
+  const n = state.tracks.length;
+  const years = state.tracks.map(yearOf).filter(Boolean);
+  $('#libStats').innerHTML = n
+    ? `<b>${n}</b> Songs geladen, davon ${state.played.length} schon gespielt.` +
+      (years.length ? ` Jahre ${Math.min(...years)}–${Math.max(...years)}.` : '')
+    : 'Noch keine Songs geladen.';
+}
+function renderSettings() {
+  const s = state.settings;
+  $('#setSec').value = s.seconds; $('#secVal').textContent = s.seconds + ' s';
+  $('#setStart').value = s.start; $('#setMode').value = s.mode;
+  $('#devBox').classList.toggle('hidden', s.mode !== 'connect');
+  if (s.mode === 'connect') renderDevices();
+  $('#setBeep').checked = s.beep; $('#setAuto').checked = s.autoReveal; $('#setPause').checked = s.pauseOnReveal;
+  $('#catList').innerHTML = state.cats.map((c, i) => `
+    <li>
+      <label class="check"><input type="checkbox" data-cat-toggle="${i}" ${c.enabled ? 'checked' : ''}>
+        <span class="ci" style="background:${catStyle(c)[1]}">${catStyle(c)[0]}</span>
+        <span><b>${esc(c.name)}</b><small>Auflösung: ${ANSWER_TYPES[c.answer]}${c.answer === 'range' ? ` (± ${c.tol} Jahre)` : ''}</small></span>
+      </label>
+      ${c.builtin ? '' : `<button class="icon" data-cat-del="${i}" title="Löschen">✕</button>`}
+    </li>`).join('');
+}
+const DEV_ICON = { Smartphone: '📱', Computer: '💻', Speaker: '🔊', TV: '📺', Tablet: '📱', CastAudio: '🔊', CastVideo: '📺', AVR: '🔊', GameConsole: '🎮' };
+async function renderDevices() {
+  const sel = $('#setDevice');
+  if (!state.tok) { sel.innerHTML = '<option value="">Erst mit Spotify verbinden</option>'; return; }
+  sel.innerHTML = '<option value="">– sucht Geräte … –</option>';
+  try {
+    const devs = await getDevices();
+    if (!devs.length) { sel.innerHTML = '<option value="">Kein Gerät gefunden – Spotify öffnen & ↻</option>'; return; }
+    sel.innerHTML = devs.map(d => `<option value="${esc(d.id)}">${DEV_ICON[d.type] || '🎧'} ${esc(d.name)}${d.is_active ? ' (aktiv)' : ''}</option>`).join('');
+    const cur = devs.find(d => d.id === state.settings.device) || devs.find(d => d.is_active) || devs[0];
+    sel.value = cur.id;
+  } catch (e) { sel.innerHTML = `<option value="">Fehler: ${esc(e.message)}</option>`; }
+}
+function renderAll() { render(); renderHist(); renderStatus(); renderLib(); renderVolume(); }
+
+/* ---------------- Events ---------------- */
+function openLib() { renderLib(); renderStatus(); $('#dlgLib').showModal(); }
+const saveSettings = () => { LS.set('settings', state.settings); render(); };
+const saveCats = () => { LS.set('cats', state.cats); renderSettings(); };
+
+document.addEventListener('click', e => {
+  const a = e.target.closest('[data-act]')?.dataset.act;
+  if (a === 'start') { resetGame(); nextRound(); }
+  else if (a === 'next') nextRound();
+  else if (a === 'countdown') startCountdown();
+  else if (a === 'reveal') reveal();
+  else if (a === 'toggle') Player.toggle();
+  else if (a === 'lib') openLib();
+  else if (a === 'fixYear') fixYear();
+  if (e.target.matches('[data-close]')) e.target.closest('dialog').close();
+  const del = e.target.closest('[data-cat-del]');
+  if (del) { state.cats.splice(+del.dataset.catDel, 1); saveCats(); }
+});
+document.addEventListener('change', e => {
+  const tg = e.target.closest('[data-cat-toggle]');
+  if (tg) { state.cats[+tg.dataset.catToggle].enabled = tg.checked; saveCats(); }
+});
+document.addEventListener('keydown', e => {
+  if (document.querySelector('dialog[open]') || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+    e.preventDefault(); setVolume(state.settings.volume + (e.code === 'ArrowUp' ? 5 : -5)); return;
+  }
+  if (e.code !== 'Space' || e.target.tagName === 'BUTTON') return;
+  e.preventDefault();
+  const ph = round?.phase || 'idle';
+  if (ph === 'playing') startCountdown();
+  else if (ph === 'countdown') reveal();
+  else nextRound();
+});
+
+$('#vol').oninput = e => setVolume(+e.target.value);
+$('#volMute').onclick = () => setVolume(state.settings.volume > 0 ? 0 : lastVol);
+$('#btnLib').onclick = openLib;
+$('#btnSettings').onclick = () => { renderSettings(); $('#dlgSettings').showModal(); };
+$('#btnLogin').onclick = login;
+$('#btnLoadPl').onclick = addPlaylist;
+$('#plUrl').onkeydown = e => { if (e.key === 'Enter') addPlaylist(); };
+$('#csvFile').onchange = async e => { const f = e.target.files[0]; if (f) importCSV(await f.text()); e.target.value = ''; renderLib(); };
+function resetGame() {
+  state.played = []; state.history = []; LS.set('played', []); LS.set('history', []);
+  round = null; stopTimer(); renderAll();
+}
+async function askNewGame() {
+  if (state.history.length && !await ask('Neues Spiel starten?\nVerlauf und „schon gespielt“ werden zurückgesetzt.', { ok: 'Neues Spiel' })) return;
+  resetGame(); Player.pause();
+  document.querySelectorAll('dialog[open]').forEach(d => d.close());
+  toast('Neues Spiel – drück auf „Spiel starten“ 🎉');
+}
+$('#btnNewGame').onclick = askNewGame;
+$('#btnRestart').onclick = askNewGame;
+$('#btnClearLib').onclick = async () => {
+  if (!await ask('Alle geladenen Songs entfernen?', { ok: 'Entfernen' })) return;
+  state.tracks = []; state.played = []; LS.set('tracks', []); LS.set('played', []);
+  round = null; stopTimer(); Player.pause(); renderAll();
+};
+
+$('#setSec').oninput = e => { state.settings.seconds = +e.target.value; $('#secVal').textContent = e.target.value + ' s'; saveSettings(); };
+$('#setStart').onchange = e => { state.settings.start = e.target.value; saveSettings(); };
+$('#setMode').onchange = e => { state.settings.mode = e.target.value; saveSettings(); Player.reset(); renderSettings(); };
+$('#setDevice').onchange = e => {
+  if (!e.target.value) return;
+  state.settings.device = e.target.value; saveSettings();
+  Player.connectDev = null; Player.connectDevice().catch(() => {});
+};
+$('#btnDevRefresh').onclick = e => { e.preventDefault(); renderDevices(); };
+$('#setBeep').onchange = e => { state.settings.beep = e.target.checked; saveSettings(); };
+$('#setAuto').onchange = e => { state.settings.autoReveal = e.target.checked; saveSettings(); };
+$('#setPause').onchange = e => { state.settings.pauseOnReveal = e.target.checked; saveSettings(); };
+
+$('#newCatType').innerHTML = Object.entries(ANSWER_TYPES).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+$('#newCatType').value = 'none';
+$('#newCatType').onchange = e => $('#newCatTol').classList.toggle('hidden', e.target.value !== 'range');
+$('#btnAddCat').onclick = () => {
+  const name = $('#newCatName').value.trim();
+  if (!name) return toast('Bitte eine Frage eingeben');
+  const answer = $('#newCatType').value;
+  const cat = { id: 'c' + Date.now(), name, answer, enabled: true, builtin: false };
+  if (answer === 'range') cat.tol = Math.max(1, parseInt($('#newCatTol').value) || 5);
+  state.cats.push(cat); $('#newCatName').value = ''; saveCats();
+};
+$('#btnResetCats').onclick = async () => {
+  if (!await ask('Kategorien auf Standard zurücksetzen?\nEigene Kategorien werden gelöscht.', { ok: 'Zurücksetzen' })) return;
+  state.cats = structuredClone(DEFAULT_CATS); saveCats();
+};
+
+/* ---------------- Start ---------------- */
+(async () => {
+  $('#redirUri').textContent = REDIRECT.startsWith('http') ? REDIRECT : 'http://127.0.0.1:8888/';
+  $('#clientId').value = state.clientId;
+  if (location.protocol === 'file:') $('#fileWarn').classList.remove('hidden');
+  try { await handleCallback(); } catch (e) { toast('Login-Fehler: ' + e.message, 6000); }
+  renderAll();
+  if (!state.tracks.length) openLib();
+})();
+</script>
+</body>
+</html>
