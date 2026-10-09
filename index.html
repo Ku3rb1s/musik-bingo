@@ -304,16 +304,25 @@ details.cell-d{position:relative}
 .qr-box svg,.qr-box img{width:100%;height:auto;display:block}
 .qr-box .small{color:#555;margin-top:6px}
 .bgrid{display:grid;grid-template-columns:repeat(var(--n,4),1fr);gap:6px;margin:12px 0}
-.bcell{aspect-ratio:1;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);display:grid;place-items:center;text-align:center;
-  padding:4px;font-weight:700;font-size:clamp(.62rem,2.9vw,.95rem);line-height:1.15;overflow-wrap:anywhere;hyphens:auto;color:var(--text);
+.bcell{--c:#888;aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;
+  background:color-mix(in srgb,var(--c) 17%,rgba(255,255,255,.02));border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);
+  padding:4px;font-weight:700;font-size:clamp(.62rem,2.9vw,.9rem);line-height:1.12;overflow-wrap:anywhere;hyphens:auto;color:var(--text);
   position:relative;transition:background .2s,transform .1s;cursor:pointer;-webkit-user-select:none;user-select:none}
-.bgrid.n5 .bcell{font-size:clamp(.55rem,2.4vw,.85rem);border-radius:10px}
-.bgrid.n3 .bcell{font-size:clamp(.8rem,3.8vw,1.1rem)}
+.bcell .bi{font-size:1.5em;line-height:1}
+.bgrid.n5 .bcell{font-size:clamp(.5rem,2.3vw,.8rem);border-radius:11px}
+.bgrid.n5 .bcell .bi{font-size:1.35em}
+.bgrid.n3 .bcell{font-size:clamp(.8rem,3.8vw,1.05rem)}
 .bcell:active{transform:scale(.95)}
-.bcell.on{background:linear-gradient(135deg,var(--accent),#17b04f);color:#06150b;border-color:transparent}
+.bcell.on{background:var(--c);color:#0b0816;border-color:transparent;box-shadow:0 6px 18px -8px var(--c)}
+.bcell.on::after{content:'✓';position:absolute;top:4px;right:7px;font-size:.95em;font-weight:900}
 .bcell.free{background:linear-gradient(135deg,var(--accent2),#8b6cff);color:#fff;border-color:transparent}
-.bcell.hit{background:rgba(30,215,96,.22);border-color:rgba(30,215,96,.6)}
-.bcell.line{box-shadow:0 0 0 2px #fff inset}
+.bcell.line{box-shadow:0 0 0 2.5px #fff inset}
+.cat-chip{display:inline-flex;align-items:center;gap:6px;padding:.38em .85em;border-radius:99px;font-weight:600;font-size:.86rem;white-space:nowrap;
+  background:color-mix(in srgb,var(--c) 20%,transparent);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.seg{display:flex;gap:4px;background:var(--cell);border-radius:14px;padding:4px;margin-top:8px}
+.seg button{flex:1;flex-direction:column;gap:1px;background:none;color:var(--text);padding:.6em .4em;border-radius:11px;font-weight:700;font-size:1rem}
+.seg button small{font-size:.72rem;font-weight:500;color:var(--muted)}
+.seg button.on{background:rgba(255,255,255,.16);box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .check-res{text-align:center;margin:10px 0 4px;font-weight:800;font-size:1.15rem}
 .check-res.won{color:var(--accent)}
 .check-res.no{color:var(--muted);font-weight:600;font-size:.98rem}
@@ -550,13 +559,8 @@ body.card-mode>header,body.card-mode>main{display:none}
         <label class="cell"><span class="cell-ic" style="background:#ffb020"><svg class="ic"><use href="#i-bulb"/></svg></span><span class="grow">Tipps erlauben<span class="sub">Kostet 1 Punkt pro Tipp</span></span><span class="switch"><input type="checkbox" id="setHints"><span></span></span></label>
       </div>
 
-      <div class="group-h">Songauswahl</div>
+      <div class="group-h">Jahreszahlen</div>
       <div class="group icons">
-        <button class="cell tap" data-go="decades">
-          <span class="cell-ic" style="background:#22d3ee"><svg class="ic"><use href="#i-cal"/></svg></span>
-          <span class="grow">Jahrzehnte<span class="sub" id="decSub"></span></span>
-          <svg class="ic chev"><use href="#i-chev"/></svg>
-        </button>
         <label class="cell"><span class="cell-ic" style="background:#8b6cff"><svg class="ic"><use href="#i-refresh"/></svg></span><span class="grow">Originaljahr nachschlagen<span class="sub">Über MusicBrainz statt Remaster-/Best-of-Jahr</span></span><span class="switch"><input type="checkbox" id="setMb"><span></span></span></label>
       </div>
 
@@ -628,14 +632,6 @@ body.card-mode>header,body.card-mode>main{display:none}
       </div>
     </section>
 
-    <section class="page" data-page="decades" data-title="Jahrzehnte">
-      <div class="group-f" style="margin-top:12px">Nur Songs aus den gewählten Jahrzehnten kommen ins Spiel – z. B. für einen 80er-Abend.</div>
-      <div class="group" id="decList"></div>
-      <div class="group">
-        <button class="cell tap accent" id="btnDecAll"><span class="grow">Alle Jahrzehnte</span></button>
-      </div>
-    </section>
-
     <section class="page" data-page="cats" data-title="Kategorien">
       <div class="group-f" style="margin-top:12px">Pro Runde wird zufällig eine aktive Kategorie gezogen.</div>
       <div class="group icons" id="catList"></div>
@@ -696,25 +692,32 @@ body.card-mode>header,body.card-mode>main{display:none}
           <p>Jeder Mitspieler scannt einen QR-Code und bekommt eine eigene Karte – ohne Anmeldung, ohne App.</p>
         </div>
         <div class="group-h">Kartengröße</div>
-        <div class="group">
-          <label class="cell"><span class="grow">Felder</span>
-            <select id="bingoSize"><option value="3">3 × 3 (schnell)</option><option value="4" selected>4 × 4</option><option value="5">5 × 5 (lang)</option></select>
-          </label>
+        <div class="seg" id="bingoSizeSeg">
+          <button data-size="3">3 × 3<small>schnell</small></button>
+          <button data-size="4">4 × 4<small>normal</small></button>
+          <button data-size="5">5 × 5<small>lang</small></button>
         </div>
-        <button id="btnBingoCreate" class="big full">Karten erstellen</button>
-        <div class="group-f" style="text-align:center;margin-top:12px">Die Felder passen zu deinen Songs: Jahrzehnte, Zeiträume, Interpreten, Wörter im Titel und mehr. Wer eine volle Reihe, Spalte oder Diagonale hat, ruft „Bingo!“.</div>
+        <div class="group-h">Felder</div>
+        <div class="chip-scroll" id="bingoCats"></div>
+        <div class="group-f" style="text-align:center;margin-top:2px">Die aktiven Kategorien – ändern unter Einstellungen → Kategorien.</div>
+        <button id="btnBingoCreate" class="big full" style="margin-top:20px">Karten erstellen</button>
+        <div class="group-f" style="text-align:center;margin-top:12px">Wer die Frage einer Runde richtig beantwortet, markiert auf seiner Karte ein Feld dieser Kategorie. Volle Reihe, Spalte oder Diagonale = „Bingo!“.</div>
       </div>
       <div id="bingoOn">
-        <div id="bingoLocal" class="warn hidden">Der Karten-Link zeigt auf diesen PC und funktioniert auf anderen Handys nicht. Öffne Musik-Bingo über die Online-Adresse, um Karten zu verteilen.</div>
         <div class="qr-box"><div id="qr"></div><div class="small">Mit der Handy-Kamera scannen</div></div>
+        <div class="chip-scroll" id="bingoInfo"></div>
         <div class="group">
           <button class="cell tap accent" id="btnBingoShare"><svg class="ic"><use href="#i-share"/></svg><span class="grow">Link teilen</span></button>
         </div>
         <div class="group-h">Bingo prüfen</div>
+        <div id="checkWhoBox">
+          <div class="group-f" style="margin:0 16px 6px">Wer hat Bingo gerufen?</div>
+          <div class="chip-scroll" id="checkWho" style="justify-content:flex-start;margin:0 4px 10px"></div>
+        </div>
         <div class="group">
           <div class="cell">
             <span>Karte Nr.</span>
-            <input id="checkNo" class="bare num" style="flex:1;text-align:left" type="number" inputmode="numeric" min="1" max="999" placeholder="z. B. 123" enterkeyhint="go">
+            <input id="checkNo" class="bare num" style="flex:1;text-align:left" type="number" inputmode="numeric" min="1" max="9999" placeholder="z. B. 4821" enterkeyhint="go">
             <button id="btnCheck" class="mini">Prüfen</button>
           </div>
         </div>
@@ -737,7 +740,8 @@ body.card-mode>header,body.card-mode>main{display:none}
   <div class="glass card-wrap">
     <div class="card-top"><span class="pill" id="cardHits"></span><button class="link small" id="btnCardClear">Markierungen löschen</button></div>
     <div id="cardGrid" class="bgrid"></div>
-    <p class="small muted" style="margin:6px 2px 0">Tippe ein Feld an, wenn der aufgelöste Song dazu passt – z. B. aus den 80ern, vom passenden Interpreten oder mit dem Wort im Titel. Volle Reihe, Spalte oder Diagonale = <b>BINGO!</b> Ruf es laut und nenn deine Kartennummer.</p>
+    <p class="small muted" style="margin:6px 2px 10px">Hast du die Frage einer Runde <b>richtig</b> beantwortet? Dann markiere <b>ein</b> Feld dieser Kategorie. Volle Reihe, Spalte oder Diagonale = <b>BINGO!</b> Ruf es laut und nenn deine Kartennummer.</p>
+    <div class="chip-scroll" id="cardLegend"></div>
   </div>
 </div>
 <div id="bingoWin" class="win hidden">
@@ -807,9 +811,9 @@ const state = {
   played: LS.get('played', []),
   cats: LS.get('cats', null) || structuredClone(DEFAULT_CATS),
   settings: Object.assign({ seconds: 30, start: 'begin', beep: true, autoReveal: true, pauseOnReveal: false, mode: 'auto', volume: 80,
-    limit: 0, hints: true, decades: [], mb: true }, LS.get('settings', {})),
+    limit: 0, hints: true, mb: true }, LS.get('settings', {})),
   players: LS.get('players', []),
-  bingo: LS.get('bingo', null),     // { g, s, c } – aktuelle Bingo-Runde
+  bingo: LS.get('bingo', null)?.k ? LS.get('bingo', null) : null,   // { g, s, k } – aktuelle Bingo-Runde
   mb: LS.get('mb', {}),             // Originaljahre laut MusicBrainz (0 = nichts Besseres gefunden)
   yearFix: LS.get('yearFix', {}),
   history: LS.get('history', []),
@@ -823,12 +827,6 @@ const yearOf = t => state.yearFix[t.id] ?? mbYear(t) ?? t.year ?? null;
 const DEF_PTS = { title: 2, artist: 2, year: 3, decade: 1, range: 2, album: 2, none: 1 };
 const catPts = c => c.pts ?? DEF_PTS[c.answer] ?? 1;
 const roundPts = () => Math.max(1, catPts(round.cat) - (round.hints || 0));
-// Nur Songs aus den gewählten Jahrzehnten
-function activeTracks() {
-  const d = state.settings.decades;
-  if (!d?.length) return state.tracks;
-  return state.tracks.filter(t => { const y = yearOf(t); return y && d.includes(Math.floor(y / 10) * 10); });
-}
 const decLabel = d => (d < 2000 ? String(d).slice(2) : d) + 'er';
 const decadeOf = y => y ? Math.floor(y / 10) * 10 + 'er' : '?';
 
@@ -891,7 +889,6 @@ function onPage(id, page) {
     if (page === 'main') renderSettings();
     if (page === 'account') renderAccount();
     if (page === 'cats') renderCats();
-    if (page === 'decades') renderDecades();
   } else if (id === 'sheetGame') {
     if (page === 'main') renderPlayers();
     if (page === 'bingo') renderBingo();
@@ -1376,16 +1373,10 @@ async function nextRound() {
   if (needSongs()) return;
   const cats = state.cats.filter(c => c.enabled);
   if (!cats.length) return toast('Keine Kategorie aktiv – siehe Einstellungen');
-  const active = activeTracks();
-  if (!active.length) return toast('Keine Songs in den gewählten Jahrzehnten – siehe Einstellungen');
   Player.unlock();
   stopTimer(); clearTimeout(snippetT);
-  let pool = active.filter(t => !state.played.includes(t.id));
-  if (!pool.length) {
-    toast('Alle Songs wurden gespielt – Liste wird neu gemischt 🔀');
-    const ids = new Set(active.map(t => t.id));
-    state.played = state.played.filter(id => !ids.has(id)); pool = active.slice();
-  }
+  let pool = state.tracks.filter(t => !state.played.includes(t.id));
+  if (!pool.length) { toast('Alle Songs wurden gespielt – Liste wird neu gemischt 🔀'); state.played = []; pool = state.tracks.slice(); }
   const track = pool[Math.floor(Math.random() * pool.length)];
   const cat = cats[Math.floor(Math.random() * cats.length)];
   state.played.push(track.id); LS.set('played', state.played);
@@ -1460,7 +1451,7 @@ function reveal() {
   stopTimer(); clearTimeout(snippetT);
   round.phase = 'revealed';
   const t = round.track;
-  state.history.unshift({ n: round.n, cat: round.cat.name, title: t.title, artists: t.artists, year: yearOf(t), id: t.id });
+  state.history.unshift({ n: round.n, cat: round.cat.name, catId: round.cat.id, ok: [], title: t.title, artists: t.artists, year: yearOf(t), id: t.id });
   state.history = state.history.slice(0, 300); LS.set('history', state.history);
   if (state.settings.pauseOnReveal) Player.pause();
   beep(1046, .25);
@@ -1606,6 +1597,9 @@ function toggleAward(id) {
   round.awarded ??= {};
   if (round.awarded[id]) { addScore(id, -round.awarded[id]); delete round.awarded[id]; }
   else { const pts = roundPts(); round.awarded[id] = pts; addScore(id, pts); beep(1320, .08); }
+  // Im Verlauf merken, wer richtig lag – damit lässt sich ein Bingo später genau prüfen
+  const h = state.history.find(x => x.n === round.n && x.id === round.track.id);
+  if (h) { h.ok = Object.keys(round.awarded); LS.set('history', state.history); }
   renderReveal();
 }
 const medal = i => ['🥇', '🥈', '🥉'][i] || `${i + 1}.`;
@@ -1630,77 +1624,36 @@ function renderScorebar() {
 }
 
 /* ---------------- Bingo ---------------- */
+// Die Felder einer Karte sind die aktiven Kategorien (in ihren Farben). Wer die Frage einer Runde
+// richtig beantwortet, markiert ein Feld dieser Kategorie. Volle Reihe, Spalte oder Diagonale = Bingo.
+const PUBLIC_URL = 'https://ku3rb1s.github.io/musik-bingo/';
 const b64u = {
   enc: s => btoa(String.fromCharCode(...new TextEncoder().encode(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
   dec: s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))),
 };
 function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-const STOP = new Set('the and you for are but not was with this that from have your what all can just der die das und ich du ein eine mit von den dem ist nicht auf für sie wir ihr es im in an zu le la les el los las de del et en un une que feat remix version edit mix live'.split(' '));
-const titleWords = title => [...new Set(baseTitle(title).toLowerCase().split(/[^\p{L}\p{N}']+/u).filter(w => w.length >= 3 && !STOP.has(w)))];
-const NUM_WORDS = /\b(one|two|three|four|five|six|seven|eight|nine|ten|hundred|million|eins|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|hundert)\b/i;
-function fieldMatch(tok, h) {
-  if (tok === '*') return true;
-  const i = tok.indexOf(':'), k = tok.slice(0, i), v = tok.slice(i + 1);
-  const t = baseTitle(h.title);
-  switch (k) {
-    case 'd': return !!h.year && Math.floor(h.year / 10) * 10 === +v;
-    case 's': return !!h.year && h.year >= +v && h.year <= +v + 4;
-    case 'a': return h.artists.toLowerCase().split(/\s*,\s*/).includes(v.toLowerCase());
-    case 'w': return titleWords(h.title).includes(v);
-    case 'f':
-      if (v === 'feat') return /\b(feat\.?|ft\.|featuring)\s/i.test(h.title) || h.artists.includes(',');
-      if (v === 'num') return /\d/.test(t) || NUM_WORDS.test(t);
-      if (v === 'one') return t.split(/\s+/).filter(Boolean).length === 1;
-  }
-  return false;
-}
-function fieldLabel(tok) {
-  if (tok === '*') return '★';
-  const i = tok.indexOf(':'), k = tok.slice(0, i), v = tok.slice(i + 1);
-  if (k === 'd') return decLabel(+v);
-  if (k === 's') return `${v}–${String(+v + 4).slice(2)}`;
-  if (k === 'a') return v;
-  if (k === 'w') return `„${v.charAt(0).toUpperCase() + v.slice(1)}“ im Titel`;
-  return { feat: 'Mit Gast-Interpret', num: 'Zahl im Titel', one: 'Titel aus 1 Wort' }[v] || v;
-}
-// Feldvorschläge passend zur Songliste: nicht zu selten (sonst kommt nie Bingo) und nicht zu häufig.
-function bingoCandidates(size) {
-  const pool = activeTracks(), N = pool.length;
-  const need = size * size - (size % 2);
-  const count = new Map();
-  for (const t of pool) {
-    const h = { title: t.title, artists: t.artists, year: yearOf(t) };
-    const toks = new Set();
-    if (h.year) { toks.add('d:' + Math.floor(h.year / 10) * 10); toks.add('s:' + Math.floor(h.year / 5) * 5); }
-    for (const a of h.artists.split(/\s*,\s*/)) if (a && a.length <= 28) toks.add('a:' + a);
-    for (const w of titleWords(h.title)) toks.add('w:' + w);
-    for (const f of ['feat', 'num', 'one']) if (fieldMatch('f:' + f, h)) toks.add('f:' + f);
-    toks.forEach(k => count.set(k, (count.get(k) || 0) + 1));
-  }
-  const all = [...count].map(([tok, c]) => ({ tok, p: c / N, k: tok[0] })).filter(x => x.p <= .6).sort((a, b) => b.p - a.p);
-  const caps = { d: 99, s: 12, a: 10, w: 10, f: 3 };
-  const max = Math.min(30, Math.max(14, need * 2));   // genug Abwechslung, aber kurzer QR-Code
-  let picked = [];
-  for (const th of [.05, .035, .025, .015, .008, 0]) {
-    const used = {}; picked = [];
-    for (const x of all) {
-      if (x.p < th || (used[x.k] || 0) >= caps[x.k]) continue;
-      used[x.k] = (used[x.k] || 0) + 1; picked.push(x.tok);
-      if (picked.length >= max) break;
-    }
-    if (picked.length >= Math.ceil(need * 1.6)) break;
-  }
-  return picked.length >= need ? picked : null;
-}
+const SHORT = { title: 'Titel', artist: 'Interpret', year: 'Genaues Jahr', decade: 'Jahrzehnt', album: 'Album' };
+const shortCat = c => c.builtin && c.answer === 'range' ? `Jahr ± ${c.tol}`
+  : c.builtin && SHORT[c.answer] ? SHORT[c.answer]
+  : c.name.length > 22 ? c.name.slice(0, 21) + '…' : c.name;
+// Der Karten-Link zeigt immer auf die Online-Adresse – auch wenn die Karten am PC (start.bat) erstellt werden.
+const cardBase = () => location.protocol === 'https:' && !/^(localhost|127\.|\[::1\])/.test(location.hostname) ? REDIRECT : PUBLIC_URL;
+// Kompaktes Format (Zeilen statt JSON), damit der QR-Code nicht zu dicht wird
+const bingoUrl = b => cardBase() + '?b=' + b64u.enc([b.g, b.s, ...b.k.map(k => [k.i, k.a, k.n].join('|'))].join('\n'));
+const parseBingo = p => {
+  const [g, s, ...rest] = b64u.dec(p).split('\n');
+  return { g, s: +s, k: rest.map(x => { const [i, a, ...n] = x.split('|'); return { i, a, n: n.join('|') }; }) };
+};
 function cardFields(b, num) {
   const r = rng(hashStr(b.g + ':' + num));
-  const arr = b.c.slice();
+  const n = b.s * b.s, free = b.s % 2 === 1, slots = n - (free ? 1 : 0);
+  // Kategorien gleichmäßig verteilen, Anordnung je Karte zufällig
+  const start = Math.floor(r() * b.k.length);
+  const arr = [...Array(slots)].map((_, i) => b.k[(start + i) % b.k.length].i);
   for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
-  const n = b.s * b.s, free = b.s % 2 === 1;
-  const take = arr.slice(0, n - (free ? 1 : 0));
-  if (free) take.splice(Math.floor(n / 2), 0, '*');
-  return take;
+  if (free) arr.splice(Math.floor(n / 2), 0, '*');
+  return arr;
 }
 function bingoLines(s) {
   const L = [];
@@ -1708,15 +1661,19 @@ function bingoLines(s) {
   L.push([...Array(s)].map((_, j) => j * s + j)); L.push([...Array(s)].map((_, j) => j * s + (s - 1 - j)));
   return L;
 }
-// Kompaktes Format (Zeilen statt JSON), damit der QR-Code nicht zu dicht wird
-const bingoUrl = b => REDIRECT + '?b=' + b64u.enc([b.g, b.s, ...b.c].join('\n'));
-const parseBingo = p => { const [g, s, ...c] = b64u.dec(p).split('\n'); return { g, s: +s, c }; };
-function createBingo(size) {
-  let s = size, c = bingoCandidates(s);
-  while (!c && s > 3) { s--; c = bingoCandidates(s); }
-  if (!c) return toast('Zu wenige Songs für Bingo-Karten – füge mehr Songs hinzu.', 6000);
-  if (s !== size) toast(`Für ${size} × ${size} gibt es zu wenige passende Felder – Karten sind ${s} × ${s}.`, 6000);
-  state.bingo = { g: randStr(6), s, c };
+function bcell(b, f, cls = '', attrs = '') {
+  if (f === '*') return `<div class="bcell free ${cls}" ${attrs}><span class="bi">★</span><span>Frei</span></div>`;
+  const k = b.k.find(x => x.i === f) || { a: 'none', n: '?' };
+  const [icon, color] = CAT_STYLE[k.a] || CAT_STYLE.none;
+  return `<div class="bcell ${cls}" style="--c:${color}" ${attrs}><span class="bi">${icon}</span><span>${esc(k.n)}</span></div>`;
+}
+const catChip = c => `<span class="cat-chip" style="--c:${catStyle(c)[1]}">${catStyle(c)[0]} ${esc(shortCat(c))}</span>`;
+
+let bingoSize = 4;
+function createBingo() {
+  const cats = state.cats.filter(c => c.enabled);
+  if (cats.length < 2) return toast('Für Bingo braucht es mindestens 2 aktive Kategorien (Einstellungen → Kategorien).', 6000);
+  state.bingo = { g: randStr(6), s: bingoSize, k: cats.map(c => ({ i: c.id, a: c.answer, n: shortCat(c) })) };
   LS.set('bingo', state.bingo);
   renderBingo(); renderPlayers();
 }
@@ -1730,12 +1687,24 @@ function loadQrLib() {
   });
   return qrLib;
 }
+let checkPlayer = null;
 async function renderBingo() {
   const b = state.bingo;
   $('#bingoOff').classList.toggle('hidden', !!b);
   $('#bingoOn').classList.toggle('hidden', !b);
-  if (!b) return;
-  $('#bingoLocal').classList.toggle('hidden', location.protocol === 'https:');
+  if (!b) {
+    document.querySelectorAll('#bingoSizeSeg button').forEach(x => x.classList.toggle('on', +x.dataset.size === bingoSize));
+    const cats = state.cats.filter(c => c.enabled);
+    $('#bingoCats').innerHTML = cats.map(catChip).join('') || '<span class="muted small">Keine Kategorie aktiv</span>';
+    return;
+  }
+  $('#bingoInfo').innerHTML = `${b.s} × ${b.s} · ${b.k.map(k => { const [icon, color] = CAT_STYLE[k.a] || CAT_STYLE.none; return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('')}`;
+  if (checkPlayer && !state.players.some(p => p.id === checkPlayer)) checkPlayer = null;
+  $('#checkWho').innerHTML = state.players.length
+    ? `<button class="chip-btn ${!checkPlayer ? 'on' : ''}" data-check-who="">Alle</button>` +
+      state.players.map(p => `<button class="chip-btn ${checkPlayer === p.id ? 'on' : ''}" data-check-who="${p.id}">${esc(p.name)}</button>`).join('')
+    : '';
+  $('#checkWhoBox').classList.toggle('hidden', !state.players.length);
   $('#checkBox').innerHTML = '';
   try {
     const qrcode = await loadQrLib();
@@ -1750,20 +1719,40 @@ async function shareBingo() {
     else { await navigator.clipboard.writeText(url); toast('Link kopiert'); }
   } catch (e) { if (e.name !== 'AbortError') toast('Teilen nicht möglich'); }
 }
+// Prüft, ob eine Karte ein Bingo haben kann: Für jede Linie muss es genug Runden der jeweiligen
+// Kategorie gegeben haben – mit gewähltem Spieler nur die Runden, in denen er richtig lag.
 function checkCard() {
   const b = state.bingo, num = parseInt($('#checkNo').value);
-  if (!b || !(num >= 1 && num <= 999)) return toast('Bitte eine Kartennummer (1–999) eingeben');
+  if (!b || !(num >= 1 && num <= 9999)) return toast('Bitte die Kartennummer eingeben');
   $('#checkNo').blur();
   const fields = cardFields(b, num);
-  const hits = fields.map(f => state.history.some(h => fieldMatch(f, h)));
-  const winLines = bingoLines(b.s).filter(l => l.every(i => hits[i]));
+  const avail = {};
+  for (const h of state.history) {
+    if (!h.catId || (checkPlayer && !(h.ok || []).includes(checkPlayer))) continue;
+    avail[h.catId] = (avail[h.catId] || 0) + 1;
+  }
+  const lineOk = l => {
+    const need = {};
+    for (const i of l) if (fields[i] !== '*') need[fields[i]] = (need[fields[i]] || 0) + 1;
+    return Object.entries(need).every(([c, n]) => (avail[c] || 0) >= n);
+  };
+  const winLines = bingoLines(b.s).filter(lineOk);
   const inLine = new Set(winLines.flat());
   const win = winLines.length > 0;
+  const who = checkPlayer ? state.players.find(p => p.id === checkPlayer) : null;
+  const counts = b.k.map(k => `${(CAT_STYLE[k.a] || CAT_STYLE.none)[0]} ${avail[k.i] || 0}×`).join(' · ');
+  const head = win
+    ? (who ? `🎉 BINGO bestätigt für ${esc(who.name)}!` : `🎉 BINGO ist möglich (Karte Nr. ${num})`)
+    : (who ? `Kein Bingo – ${esc(who.name)} hat noch zu wenig richtig` : 'Noch kein Bingo möglich');
+  const note = who
+    ? `Richtige Antworten von ${esc(who.name)}: ${counts}`
+    : `Bisher gespielte Runden: ${counts}${state.players.length ? '<br>Für eine genaue Prüfung oben den Spieler wählen.' : ''}`;
   $('#checkBox').innerHTML = `
-    <div class="check-res ${win ? 'won' : 'no'}">${win ? `🎉 BINGO! Karte Nr. ${num} hat gewonnen` : `Noch kein Bingo – ${hits.filter(Boolean).length - (b.s % 2)} Felder getroffen`}</div>
-    <div class="bgrid n${b.s}" style="--n:${b.s}">${fields.map((f, i) => `<div class="bcell ${f === '*' ? 'free' : hits[i] ? 'hit' : ''} ${inLine.has(i) ? 'line' : ''}">${esc(fieldLabel(f))}</div>`).join('')}</div>
-    <div class="group-f" style="text-align:center;margin-top:0">Grün = passt zu einem bereits aufgelösten Song.</div>
-    ${win && state.players.length ? `<div class="award"><div class="award-h">Bingo-Bonus <b>+5</b> für:</div><div class="chips">${state.players.map(p => `<button class="chip-btn" data-bonus="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>` : ''}`;
+    <div class="check-res ${win ? 'won' : 'no'}">${head}</div>
+    <div class="bgrid n${b.s}" style="--n:${b.s}">${fields.map((f, i) => bcell(b, f, inLine.has(i) ? 'line' : '')).join('')}</div>
+    <div class="group-f" style="text-align:center;margin-top:0">${note}</div>
+    ${win && state.players.length ? `<div class="award"><div class="award-h">Bingo-Bonus <b>+5</b> für:</div><div class="chips">${
+      (who ? [who] : state.players).map(p => `<button class="chip-btn" data-bonus="${p.id}">${esc(p.name)}</button>`).join('')}</div></div>` : ''}`;
   if (win) { confetti(); beep(1046, .3); }
 }
 function confetti() {
@@ -1782,17 +1771,18 @@ function confetti() {
 /* Karten-Ansicht für Mitspieler: läuft komplett auf deren Handy, ohne Spotify */
 function cardMode(param) {
   let b;
-  try { b = parseBingo(param); if (!b.g || !(b.s >= 3 && b.s <= 5) || b.c.length < b.s * b.s - 1) throw 0; }
+  try { b = parseBingo(param); if (!b.g || !(b.s >= 3 && b.s <= 5) || !b.k.length) throw 0; }
   catch { document.body.innerHTML = '<p style="padding:40px;text-align:center">Diese Bingo-Karte ist ungültig.</p>'; return; }
   document.body.classList.add('card-mode');
   $('#cardApp').classList.remove('hidden');
   const key = 'card_' + b.g;
-  const st = LS.get(key, null) || { num: 1 + Math.floor(Math.random() * 999), marks: [] };
+  const st = LS.get(key, null) || { num: 1000 + Math.floor(Math.random() * 9000), marks: [] };
   LS.set(key, st);
   const fields = cardFields(b, st.num);
   const lines = bingoLines(b.s);
   let won = false;
   $('#cardNo').textContent = $('#winNo').textContent = st.num;
+  $('#cardLegend').innerHTML = b.k.map(k => { const [icon, color] = CAT_STYLE[k.a] || CAT_STYLE.none; return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('');
   const draw = () => {
     const on = new Set(st.marks);
     const isOn = i => fields[i] === '*' || on.has(i);
@@ -1800,7 +1790,7 @@ function cardMode(param) {
     g.className = 'bgrid n' + b.s; g.style.setProperty('--n', b.s);
     const winning = lines.filter(l => l.every(isOn));
     const inLine = new Set(winning.flat());
-    g.innerHTML = fields.map((f, i) => `<div class="bcell ${f === '*' ? 'free' : on.has(i) ? 'on' : ''} ${inLine.has(i) ? 'line' : ''}" data-i="${i}">${esc(fieldLabel(f))}</div>`).join('');
+    g.innerHTML = fields.map((f, i) => bcell(b, f, `${on.has(i) ? 'on' : ''} ${inLine.has(i) ? 'line' : ''}`, `data-i="${i}"`)).join('');
     $('#cardHits').textContent = `${on.size} markiert`;
     if (winning.length && !won) { won = true; confetti(); $('#bingoWin').classList.remove('hidden'); }
     if (!winning.length) won = false;
@@ -1824,10 +1814,8 @@ function cardMode(param) {
 function render() {
   const ph = round?.phase || 'idle';
   $('#roundNo').textContent = round ? `Runde ${round.n}` : 'Runde –';
-  const active = activeTracks();
-  const left = active.filter(t => !state.played.includes(t.id)).length;
-  const filtered = state.settings.decades?.length ? ' · ' + state.settings.decades.slice().sort().map(decLabel).join(', ') : '';
-  $('#remaining').textContent = state.tracks.length ? `${left} / ${active.length} übrig${filtered}` : 'Keine Songs';
+  const left = state.tracks.filter(t => !state.played.includes(t.id)).length;
+  $('#remaining').textContent = state.tracks.length ? `${left} / ${state.tracks.length} Songs übrig` : 'Keine Songs';
   $('#catLabel').textContent = round ? 'Kategorie dieser Runde' : 'Musik-Bingo';
   $('#cat').classList.toggle('idle', !round);
   if (!spinning) {
@@ -1985,7 +1973,6 @@ function renderSettings() {
   $('#setStart').value = s.start; $('#setMode').value = s.mode;
   $('#setBeep').checked = s.beep; $('#setAuto').checked = s.autoReveal; $('#setPause').checked = s.pauseOnReveal;
   $('#setLimit').value = String(s.limit || 0); $('#setHints').checked = s.hints; $('#setMb').checked = s.mb;
-  $('#decSub').textContent = s.decades?.length ? s.decades.slice().sort().map(decLabel).join(', ') : 'Alle';
   const showDev = s.mode === 'connect' || Player.mode === 'connect';
   $('#devRow').classList.toggle('hidden', !showDev);
   if (showDev) renderDevices();
@@ -2002,19 +1989,6 @@ function renderCats() {
       ${c.builtin ? '' : `<button class="icon-btn del" data-cat-del="${i}" aria-label="Löschen">${ic('trash')}</button>`}
       <span class="switch"><input type="checkbox" data-cat-toggle="${i}" ${c.enabled ? 'checked' : ''}><span></span></span>
     </label>`).join('');
-}
-function libDecades() {
-  const m = new Map();
-  for (const t of state.tracks) { const y = yearOf(t); if (y) { const d = Math.floor(y / 10) * 10; m.set(d, (m.get(d) || 0) + 1); } }
-  return [...m].sort((a, b) => a[0] - b[0]);
-}
-function renderDecades() {
-  const sel = state.settings.decades || [];
-  const decs = libDecades();
-  $('#decList').innerHTML = decs.map(([d, n]) => `
-    <label class="cell"><span class="grow">${decLabel(d)}<span class="sub">${n} Songs</span></span>
-      <span class="switch"><input type="checkbox" data-dec="${d}" ${!sel.length || sel.includes(d) ? 'checked' : ''}><span></span></span></label>`).join('')
-    || '<div class="cell muted">Noch keine Songs geladen</div>';
 }
 function renderAccount() {
   const inn = !!state.tok;
@@ -2074,6 +2048,12 @@ document.addEventListener('click', async e => {
   const open = t.closest('[data-open]');
   if (open) { const [id, page] = open.dataset.open.split(':'); openSheet(id, page); }
 
+  const cw = t.closest('[data-check-who]');
+  if (cw) {
+    checkPlayer = cw.dataset.checkWho || null;
+    document.querySelectorAll('[data-check-who]').forEach(x => x.classList.toggle('on', (x.dataset.checkWho || null) === checkPlayer));
+    if ($('#checkNo').value) checkCard();
+  }
   const aw = t.closest('[data-award]');
   if (aw) toggleAward(aw.dataset.award);
   const sc = t.closest('[data-score]');
@@ -2106,16 +2086,6 @@ document.addEventListener('change', e => {
   if (tg) { state.cats[+tg.dataset.catToggle].enabled = tg.checked; saveCats(); }
   const pts = e.target.closest('[data-cat-pts]');
   if (pts) { state.cats[+pts.dataset.catPts].pts = +pts.value; LS.set('cats', state.cats); }
-  const dec = e.target.closest('[data-dec]');
-  if (dec) {
-    const all = libDecades().map(([d]) => d);
-    const cur = state.settings.decades?.length ? state.settings.decades.slice() : all.slice();
-    const d = +dec.dataset.dec;
-    let next = dec.checked ? [...new Set([...cur, d])] : cur.filter(x => x !== d);
-    if (!next.length) { dec.checked = true; return toast('Mindestens ein Jahrzehnt muss aktiv bleiben'); }
-    if (all.every(x => next.includes(x))) next = [];
-    state.settings.decades = next; saveSettings(); renderSettings();
-  }
 });
 document.addEventListener('keydown', e => {
   if (document.querySelector('dialog[open]') || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
@@ -2180,19 +2150,22 @@ $('#btnResetScores').onclick = async () => {
 };
 $('#btnAddPlayer').onclick = addPlayer;
 $('#newPlayer').onkeydown = e => { if (e.key === 'Enter') addPlayer(); };
-$('#btnBingoCreate').onclick = () => createBingo(+$('#bingoSize').value);
+$('#btnBingoCreate').onclick = createBingo;
+$('#bingoSizeSeg').onclick = e => {
+  const b = e.target.closest('[data-size]'); if (!b) return;
+  bingoSize = +b.dataset.size; renderBingo();
+};
 $('#btnBingoShare').onclick = shareBingo;
 $('#btnCheck').onclick = checkCard;
 $('#checkNo').onkeydown = e => { if (e.key === 'Enter') checkCard(); };
 $('#btnBingoNew').onclick = async () => {
   if (!await ask('Neue Karten erstellen?\nDie alten Karten werden ungültig – alle müssen den neuen QR-Code scannen.', { ok: 'Neu erstellen', danger: true })) return;
-  createBingo(state.bingo?.s || 4);
+  bingoSize = state.bingo?.s || bingoSize; createBingo();
 };
 $('#btnBingoOff').onclick = async () => {
   if (!await ask('Bingo beenden?', { ok: 'Beenden', danger: true })) return;
   state.bingo = null; LS.del('bingo'); renderBingo(); renderPlayers();
 };
-$('#btnDecAll').onclick = () => { state.settings.decades = []; saveSettings(); renderDecades(); renderSettings(); };
 $('#setLimit').onchange = e => { state.settings.limit = +e.target.value; saveSettings(); };
 $('#setHints').onchange = e => { state.settings.hints = e.target.checked; saveSettings(); };
 $('#setMb').onchange = e => { state.settings.mb = e.target.checked; saveSettings(); renderHist(); };
