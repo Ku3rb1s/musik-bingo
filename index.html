@@ -347,25 +347,71 @@ body.card-mode>header,body.card-mode>main{display:none}
 .confetti i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 
+/* ---------- Glas-Look (angelehnt an iOS Liquid Glass) ---------- */
+:root{
+  --g-bg:rgba(255,255,255,.075);--g-brd:rgba(255,255,255,.17);
+  --g-hi:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(0,0,0,.18);
+  --g-blur:blur(26px) saturate(175%);
+  --g-sheen:linear-gradient(140deg,rgba(255,255,255,.17),rgba(255,255,255,0) 34%,rgba(255,255,255,0) 68%,rgba(255,255,255,.06));
+}
+/* Unschärfe + Glanz liegen auf Pseudo-Elementen: so bleibt die fixe Bedienleiste in der Karte am Bildschirm verankert */
+.glass{background:transparent;border:1px solid var(--g-brd);backdrop-filter:none;-webkit-backdrop-filter:none;position:relative;isolation:isolate;
+  box-shadow:var(--g-hi),0 30px 60px -30px rgba(0,0,0,.65)}
+.glass::before,.glass::after{content:'';position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none}
+.glass::before{background:var(--g-bg);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur)}
+.glass::after{background:var(--g-sheen)}
+.hbtn,.pill,button.ghost,.chip-btn,.cat-chip,.scorebar .sc{backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);box-shadow:var(--g-hi)}
+.hbtn{background:var(--g-bg) var(--g-sheen);border-color:var(--g-brd);border-radius:99px}
+.pill{background:var(--g-bg);border-color:var(--g-brd)}
+button.ghost{background:rgba(255,255,255,.09) var(--g-sheen);border-color:var(--g-brd)}
+.chip-btn{background:rgba(255,255,255,.08) var(--g-sheen);border-color:var(--g-brd)}
+.chip-btn.on{background:var(--accent) linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 60%)}
+/* Farbige Knöpfe mit Lichtkante oben */
+button.big,button.mini,.seg button.on{background-image:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0) 58%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.15),0 12px 30px -12px var(--accent)}
+button.pink.big{box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 30px -12px var(--accent2)}
+.cat-badge{backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);
+  box-shadow:var(--g-hi),0 14px 34px -16px var(--cat);background-image:var(--g-sheen),linear-gradient(135deg,color-mix(in srgb,var(--cat) 24%,transparent),rgba(255,255,255,.03))}
+.cat-icon{background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 60%);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 24px -8px var(--cat)}
+.rv-answer,.rv-song,.award{backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);box-shadow:var(--g-hi)}
+.rv-answer{background-image:var(--g-sheen),linear-gradient(135deg,color-mix(in srgb,var(--cat) 25%,transparent),rgba(255,255,255,.03))}
+.rv-song,.award{background:rgba(255,255,255,.06) var(--g-sheen);border-color:var(--g-brd)}
+/* Menüs als Glasfläche */
+dialog::backdrop{background:rgba(5,3,12,.42)}
+.sheet{background:rgba(26,20,50,.66);backdrop-filter:blur(36px) saturate(180%);-webkit-backdrop-filter:blur(36px) saturate(180%);
+  border-color:var(--g-brd);box-shadow:var(--g-hi),0 40px 80px -20px #000}
+.sheet-head{background:transparent;border-bottom-color:rgba(255,255,255,.08)}
+.group{background:rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.seg{background:rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.seg button.on{background-color:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 10px rgba(0,0,0,.3)}
+.alert,#toast{background:rgba(40,33,76,.62);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 50px -10px rgba(0,0,0,.7)}
+.alert{border-radius:22px}
+.bcell{box-shadow:inset 0 1px 0 rgba(255,255,255,.14);background-image:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,0) 50%)}
+.bcell.on,.bcell.free{background-image:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 60%)}
+.qr-box{box-shadow:0 20px 50px -15px rgba(0,0,0,.6),inset 0 1px 0 #fff}
+
 /* ---------- Handy ---------- */
 @media (max-width:640px){
   header{padding:calc(var(--sat) + 16px) 14px 12px}
   .logo{font-size:1.18rem;gap:9px}.logo img{width:34px;height:34px;border-radius:9px}
   .hbtn .lbl{display:none}
-  .hbtn{width:42px;height:42px;padding:0;border-radius:13px}
+  .hbtn{width:44px;height:44px;padding:0;border-radius:50%}
   .hbtn .ic{width:21px;height:21px}
-  main{padding:0 12px calc(150px + var(--sab))}
-  .stage{padding:16px 14px 18px;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(30,24,58,.8)}
+  main{padding:0 12px calc(160px + var(--sab))}
+  .stage{padding:16px 14px 18px}
   .round-meta{margin-bottom:14px}
   .cat-badge{padding:10px 18px 10px 10px;gap:11px;border-radius:20px}
   .cat-icon{width:44px;height:44px;font-size:1.35rem;border-radius:13px}
   .disc-wrap{margin:18px auto 6px;width:min(250px,64vw)}
-  /* Bedienleiste unten wie eine iOS-Toolbar */
-  .controls{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:12px 12px calc(10px + var(--sab));gap:8px;
-    background:rgba(16,12,32,.86);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
-    border-top:1px solid var(--line);flex-wrap:wrap}
-  .controls .big{flex:1 1 100%;padding:.9em 1em}
-  .controls .ghost{flex:1 1 0;flex-direction:column;gap:3px;padding:.55em .3em;font-size:.74rem;font-weight:600;border-radius:14px}
+  /* Bedienleiste unten als schwebende Glas-Kapsel */
+  .controls{position:fixed;left:10px;right:10px;bottom:calc(max(var(--sab), 6px) + 6px);z-index:20;padding:8px;gap:6px;border-radius:32px;
+    background:rgba(34,27,64,.5);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);
+    border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 44px -14px rgba(0,0,0,.75);flex-wrap:wrap}
+  .controls .big{flex:1 1 100%;padding:.9em 1em;border-radius:26px}
+  .controls .ghost{flex:1 1 0;flex-direction:column;gap:3px;padding:.55em .3em;font-size:.74rem;font-weight:600;border-radius:22px;
+    background:transparent;border-color:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+  .controls .ghost:active{background:rgba(255,255,255,.12)}
   .controls .ghost .ic{width:22px;height:22px}
   .controls.duo{flex-wrap:nowrap}
   .controls.duo .big{flex:1 1 0;min-width:0}
@@ -377,7 +423,7 @@ body.card-mode>header,body.card-mode>main{display:none}
   .cover{width:min(190px,55vw);height:min(190px,55vw)}
   .hist{padding:2px 16px}
   /* Sheets kommen von unten wie in iOS */
-  .sheet{width:100vw;max-width:100vw;height:calc(100dvh - max(var(--sat), 20px) - 24px);margin:auto 0 0;border-radius:14px 14px 0 0;border-bottom:0}
+  .sheet{width:100vw;max-width:100vw;height:calc(100dvh - max(var(--sat), 20px) - 24px);margin:auto 0 0;border-radius:28px 28px 0 0;border-bottom:0}
   .sheet[open]{animation:sheetUp .38s cubic-bezier(.2,.9,.3,1)}
   .grab{display:block}
   .sheet-head{padding-top:18px}
@@ -803,7 +849,20 @@ const CAT_STYLE = {
   title: ['🎵', '#1ed760'], artist: ['🎤', '#ff4fa3'], year: ['📅', '#ffb020'], decade: ['🕰️', '#8b6cff'],
   range: ['🎯', '#22d3ee'], album: ['💿', '#ff8a3d'], none: ['❓', '#a3e635'],
 };
-const catStyle = c => CAT_STYLE[c?.answer] || CAT_STYLE.none;
+const catStyle = c => {
+  const base = CAT_STYLE[c?.answer] || CAT_STYLE.none;
+  return [c?.icon || base[0], c?.color || base[1]];
+};
+// Eigene Kategorien bekommen eine Farbe und ein Symbol, die noch keine andere Kategorie hat
+const CUSTOM_COLORS = ['#f43f5e', '#14b8a6', '#6366f1', '#eab308', '#d946ef', '#0ea5e9', '#f97316', '#84cc16', '#ef4444', '#10b981', '#a855f7', '#fb7185'];
+const CUSTOM_ICONS = ['⭐', '🔥', '💎', '🎸', '🎹', '🥁', '🎺', '🌍', '💃', '🎬', '❤️', '🚀'];
+function assignStyle(cat, cats) {
+  const usedC = new Set(cats.map(c => catStyle(c)[1].toLowerCase()));
+  const usedI = new Set(cats.map(c => catStyle(c)[0]));
+  cat.color = CUSTOM_COLORS.find(c => !usedC.has(c)) || CUSTOM_COLORS[cats.length % CUSTOM_COLORS.length];
+  cat.icon = CUSTOM_ICONS.find(i => !usedI.has(i)) || CUSTOM_ICONS[cats.length % CUSTOM_ICONS.length];
+  return cat;
+}
 
 const state = {
   clientId: LS.get('clientId', '') || DEFAULT_CLIENT_ID,
@@ -816,11 +875,19 @@ const state = {
   settings: Object.assign({ seconds: 30, start: 'begin', beep: true, autoReveal: true, pauseOnReveal: false, mode: 'auto', volume: 80,
     limit: 0, hints: true, mb: true }, LS.get('settings', {})),
   players: LS.get('players', []),
-  bingo: LS.get('bingo', null)?.k ? LS.get('bingo', null) : null,   // { g, s, k } – aktuelle Bingo-Runde
+  bingo: LS.get('bingo', null)?.k ? LS.get('bingo', null) : null,   // { g, s, k: [{ i, c, e, n }] } – aktuelle Bingo-Runde
   mb: LS.get('mb', {}),             // Originaljahre laut MusicBrainz (0 = nichts Besseres gefunden)
   yearFix: LS.get('yearFix', {}),
   history: LS.get('history', []),
 };
+// Ältere eigene Kategorien (noch ohne eigene Farbe) nachträglich einfärben
+if (state.cats.some(c => !c.builtin && !c.color)) {
+  state.cats.forEach((c, i) => { if (!c.builtin && !c.color) assignStyle(c, state.cats.slice(0, i)); });
+  LS.set('cats', state.cats);
+}
+// Bingo-Felder: Farbe/Symbol stecken direkt im Feld (k.c ohne „#“, k.e), ältere Runden hatten nur den Antworttyp (k.a)
+const kStyle = k => { const base = CAT_STYLE[k.a] || CAT_STYLE.none; return [k.e || base[0], k.c ? '#' + k.c : base[1]]; };
+if (state.bingo) state.bingo.k = state.bingo.k.map(k => { const [e, c] = kStyle(k); return { i: k.i, c: c.slice(1), e, n: k.n }; });
 let round = null;      // { n, track, cat, phase: 'playing'|'countdown'|'revealed', timeUp }
 let spinning = false;
 
@@ -1720,10 +1787,10 @@ const shortCat = c => c.builtin && c.answer === 'range' ? `Jahr ± ${c.tol}`
 // Der Karten-Link zeigt immer auf die Online-Adresse – auch wenn die Karten am PC (start.bat) erstellt werden.
 const cardBase = () => location.protocol === 'https:' && !/^(localhost|127\.|\[::1\])/.test(location.hostname) ? REDIRECT : PUBLIC_URL;
 // Kompaktes Format (Zeilen statt JSON), damit der QR-Code nicht zu dicht wird
-const bingoUrl = b => cardBase() + '?b=' + b64u.enc([b.g, b.s, ...b.k.map(k => [k.i, k.a, k.n].join('|'))].join('\n'));
+const bingoUrl = b => cardBase() + '?b=' + b64u.enc([b.g, b.s, ...b.k.map(k => [k.i, k.c, k.e, k.n].join('|'))].join('\n'));
 const parseBingo = p => {
   const [g, s, ...rest] = b64u.dec(p).split('\n');
-  return { g, s: +s, k: rest.map(x => { const [i, a, ...n] = x.split('|'); return { i, a, n: n.join('|') }; }) };
+  return { g, s: +s, k: rest.map(x => { const [i, c, e, ...n] = x.split('|'); return { i, c, e, n: n.join('|') }; }) };
 };
 function cardFields(b, num) {
   const r = rng(hashStr(b.g + ':' + num));
@@ -1744,7 +1811,7 @@ function bingoLines(s) {
 function bcell(b, f, cls = '', attrs = '') {
   if (f === '*') return `<div class="bcell free ${cls}" ${attrs}><span class="bi">★</span><span>Frei</span></div>`;
   const k = b.k.find(x => x.i === f) || { a: 'none', n: '?' };
-  const [icon, color] = CAT_STYLE[k.a] || CAT_STYLE.none;
+  const [icon, color] = kStyle(k);
   return `<div class="bcell ${cls}" style="--c:${color}" ${attrs}><span class="bi">${icon}</span><span>${esc(k.n)}</span></div>`;
 }
 const catChip = c => `<span class="cat-chip" style="--c:${catStyle(c)[1]}">${catStyle(c)[0]} ${esc(shortCat(c))}</span>`;
@@ -1753,7 +1820,7 @@ let bingoSize = 4;
 function createBingo() {
   const cats = state.cats.filter(c => c.enabled);
   if (cats.length < 2) return toast('Für Bingo braucht es mindestens 2 aktive Kategorien (Einstellungen → Kategorien).', 6000);
-  state.bingo = { g: randStr(6), s: bingoSize, k: cats.map(c => ({ i: c.id, a: c.answer, n: shortCat(c) })) };
+  state.bingo = { g: randStr(6), s: bingoSize, k: cats.map(c => { const [e, col] = catStyle(c); return { i: c.id, c: col.slice(1), e, n: shortCat(c) }; }) };
   LS.set('bingo', state.bingo);
   renderBingo(); renderPlayers();
 }
@@ -1778,7 +1845,7 @@ async function renderBingo() {
     $('#bingoCats').innerHTML = cats.map(catChip).join('') || '<span class="muted small">Keine Kategorie aktiv</span>';
     return;
   }
-  $('#bingoInfo').innerHTML = `${b.s} × ${b.s} · ${b.k.map(k => { const [icon, color] = CAT_STYLE[k.a] || CAT_STYLE.none; return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('')}`;
+  $('#bingoInfo').innerHTML = `${b.s} × ${b.s} · ${b.k.map(k => { const [icon, color] = kStyle(k); return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('')}`;
   if (checkPlayer && !state.players.some(p => p.id === checkPlayer)) checkPlayer = null;
   $('#checkWho').innerHTML = state.players.length
     ? `<button class="chip-btn ${!checkPlayer ? 'on' : ''}" data-check-who="">Alle</button>` +
@@ -1820,7 +1887,7 @@ function checkCard() {
   const inLine = new Set(winLines.flat());
   const win = winLines.length > 0;
   const who = checkPlayer ? state.players.find(p => p.id === checkPlayer) : null;
-  const counts = b.k.map(k => `${(CAT_STYLE[k.a] || CAT_STYLE.none)[0]} ${avail[k.i] || 0}×`).join(' · ');
+  const counts = b.k.map(k => `${kStyle(k)[0]} ${avail[k.i] || 0}×`).join(' · ');
   const head = win
     ? (who ? `🎉 BINGO bestätigt für ${esc(who.name)}!` : `🎉 BINGO ist möglich (Karte Nr. ${num})`)
     : (who ? `Kein Bingo – ${esc(who.name)} hat noch zu wenig richtig` : 'Noch kein Bingo möglich');
@@ -1862,7 +1929,7 @@ function cardMode(param) {
   const lines = bingoLines(b.s);
   let won = false;
   $('#cardNo').textContent = $('#winNo').textContent = st.num;
-  $('#cardLegend').innerHTML = b.k.map(k => { const [icon, color] = CAT_STYLE[k.a] || CAT_STYLE.none; return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('');
+  $('#cardLegend').innerHTML = b.k.map(k => { const [icon, color] = kStyle(k); return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('');
   const draw = () => {
     const on = new Set(st.marks);
     const isOn = i => fields[i] === '*' || on.has(i);
@@ -2276,7 +2343,7 @@ $('#btnAddCat').onclick = () => {
   const name = $('#newCatName').value.trim();
   if (!name) { $('#newCatName').focus(); return toast('Bitte eine Frage eingeben'); }
   const answer = $('#newCatType').value;
-  const cat = { id: 'c' + Date.now(), name, answer, enabled: true, builtin: false };
+  const cat = assignStyle({ id: 'c' + Date.now(), name, answer, enabled: true, builtin: false }, state.cats);
   if (answer === 'range') cat.tol = Math.max(1, parseInt($('#newCatTol').value) || 5);
   state.cats.push(cat); $('#newCatName').value = ''; $('#newCatName').blur(); saveCats();
   toast('Kategorie hinzugefügt');
