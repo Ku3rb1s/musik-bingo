@@ -340,7 +340,8 @@ body.card-mode>header,body.card-mode>main{display:none}
 #cardApp{max-width:560px;margin:0 auto;padding:calc(var(--sat) + 14px) 14px calc(30px + var(--sab))}
 #cardApp .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 #cardApp .card-wrap{padding:16px}
-#cardApp .card-top{display:flex;justify-content:space-between;gap:8px}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mycard-btn{width:100%;margin-top:16px;padding:.95em;border-radius:20px;font-size:1rem}
 #cardApp p{line-height:1.45}
 .win{position:fixed;inset:0;z-index:150;display:grid;place-items:center;background:rgba(5,3,12,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;padding:20px}
 .win .big-word{font-size:clamp(3.5rem,18vw,7rem);font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;animation:land .6s cubic-bezier(.3,1.6,.5,1)}
@@ -506,6 +507,7 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
     <p class="hint"><kbd>Leertaste</kbd> nächster Schritt · <kbd>↑</kbd><kbd>↓</kbd> Lautstärke</p>
   </section>
 
+  <button id="myCardBtn" class="ghost mycard-btn hidden" data-open="sheetGame:mycard"><svg class="ic"><use href="#i-grid"/></svg>Meine Bingo-Karte</button>
   <div id="scorebar" class="scorebar glass hidden" data-open="sheetGame:main"></div>
 
   <details class="hist glass" id="histBox">
@@ -762,6 +764,7 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
         <div class="chip-scroll" id="bingoInfo"></div>
         <div class="group">
           <button class="cell tap accent" id="btnBingoShare"><svg class="ic"><use href="#i-share"/></svg><span class="grow">Link teilen</span></button>
+          <button class="cell tap" data-go="mycard"><svg class="ic"><use href="#i-grid"/></svg><span class="grow">Meine Karte<span class="sub">Als Spielleiter selbst mitspielen</span></span><svg class="ic chev"><use href="#i-chev"/></svg></button>
         </div>
         <div class="group-h">Bingo prüfen</div>
         <div id="checkWhoBox">
@@ -779,6 +782,23 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
         <div class="group" style="margin-top:22px">
           <button class="cell tap danger" id="btnBingoNew"><span class="grow">Neue Karten erstellen<span class="sub">Alle müssen den neuen QR-Code scannen</span></span></button>
           <button class="cell tap danger" id="btnBingoOff"><span class="grow">Bingo beenden</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" data-page="mycard" data-title="Meine Karte">
+      <div id="myCardOff" class="notice">
+        <p>Erstelle zuerst Bingo-Karten – dann bekommst du hier deine eigene.</p>
+        <button data-go="bingo">Zu den Bingo-Karten</button>
+      </div>
+      <div id="myCardOn">
+        <div class="card-top" style="margin-top:14px"><span class="pill">Karte Nr. <b id="myCardNo"></b></span><span class="pill" id="myCardHits"></span></div>
+        <div id="myCardWin" class="check-res won hidden">🎉 BINGO! Ruf es laut – Karte Nr. <span id="myCardWinNo"></span></div>
+        <div id="myCardGrid" class="bgrid"></div>
+        <div class="chip-scroll" id="myCardLegend"></div>
+        <div class="group-f" style="text-align:center">Hast du die Frage einer Runde richtig beantwortet? Dann markiere ein Feld dieser Kategorie – genau wie die Mitspieler.</div>
+        <div class="group" style="margin-top:16px">
+          <button class="cell tap danger" id="btnMyCardClear"><span class="grow">Markierungen löschen</span></button>
         </div>
       </div>
     </section>
@@ -1001,6 +1021,7 @@ function onPage(id, page) {
   } else if (id === 'sheetGame') {
     if (page === 'main') renderPlayers();
     if (page === 'bingo') renderBingo();
+    if (page === 'mycard') renderMyCard();
   } else if (id === 'sheetLib') {
     if (page === 'main') renderLib();
     if (page === 'add') { renderAdd(); loadMyPlaylists(); }
@@ -1830,7 +1851,7 @@ function createBingo() {
   if (cats.length < 2) return toast('Für Bingo braucht es mindestens 2 aktive Kategorien (Einstellungen → Kategorien).', 6000);
   state.bingo = { g: randStr(6), s: bingoSize, k: cats.map(c => { const [e, col] = catStyle(c); return { i: c.id, c: col.slice(1), e, n: shortCat(c) }; }) };
   LS.set('bingo', state.bingo);
-  renderBingo(); renderPlayers();
+  renderBingo(); renderPlayers(); renderMyCardBtn();
 }
 let qrLib = null;
 function loadQrLib() {
@@ -1919,8 +1940,46 @@ function confetti() {
     s.style.animationDelay = Math.random() * .6 + 's'; s.style.animationDuration = 2 + Math.random() * 1.6 + 's';
     c.appendChild(s);
   }
-  document.body.appendChild(c); setTimeout(() => c.remove(), 4500);
+  // In ein offenes Menü einhängen – sonst läge das Konfetti dahinter
+  (document.querySelector('dialog.sheet[open]') || document.body).appendChild(c); setTimeout(() => c.remove(), 4500);
   try { navigator.vibrate?.([30, 40, 30]); } catch {}
+}
+
+/* Eine Bingo-Karte anzeigen und markieren – für Mitspieler (über den QR-Code) und für den Spielleiter in der App.
+   el = { grid, no, hits, legend, clear }, onWin(num, beimÖffnen) */
+function mountCard(b, el, onWin) {
+  const key = 'card_' + b.g;
+  const st = LS.get(key, null) || { num: 1000 + Math.floor(Math.random() * 9000), marks: [] };
+  LS.set(key, st);
+  const fields = cardFields(b, st.num);
+  const lines = bingoLines(b.s);
+  let won = false, first = true;
+  el.no.textContent = st.num;
+  el.legend.innerHTML = b.k.map(k => { const [icon, color] = kStyle(k); return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('');
+  const draw = () => {
+    const on = new Set(st.marks);
+    const isOn = i => fields[i] === '*' || on.has(i);
+    el.grid.className = 'bgrid n' + b.s; el.grid.style.setProperty('--n', b.s);
+    const winning = lines.filter(l => l.every(isOn));
+    const inLine = new Set(winning.flat());
+    el.grid.innerHTML = fields.map((f, i) => bcell(b, f, `${on.has(i) ? 'on' : ''} ${inLine.has(i) ? 'line' : ''}`, `data-i="${i}"`)).join('');
+    el.hits.textContent = `${on.size} markiert`;
+    if (winning.length && !won) { won = true; onWin(st.num, first); }
+    if (!winning.length) { won = false; onWin(null); }
+    first = false;
+  };
+  el.grid.onclick = e => {
+    const c = e.target.closest('[data-i]'); if (!c) return;
+    const i = +c.dataset.i; if (fields[i] === '*') return;
+    st.marks = st.marks.includes(i) ? st.marks.filter(x => x !== i) : [...st.marks, i];
+    LS.set(key, st); try { navigator.vibrate?.(10); } catch {}
+    draw();
+  };
+  el.clear.onclick = async () => {
+    if (!await ask('Alle Markierungen löschen?', { ok: 'Löschen', danger: true })) return;
+    st.marks = []; LS.set(key, st); draw();
+  };
+  draw();
 }
 
 /* Karten-Ansicht für Mitspieler: läuft komplett auf deren Handy, ohne Spotify */
@@ -1930,40 +1989,26 @@ function cardMode(param) {
   catch { document.body.innerHTML = '<p style="padding:40px;text-align:center">Diese Bingo-Karte ist ungültig.</p>'; return; }
   document.body.classList.add('card-mode');
   $('#cardApp').classList.remove('hidden');
-  const key = 'card_' + b.g;
-  const st = LS.get(key, null) || { num: 1000 + Math.floor(Math.random() * 9000), marks: [] };
-  LS.set(key, st);
-  const fields = cardFields(b, st.num);
-  const lines = bingoLines(b.s);
-  let won = false;
-  $('#cardNo').textContent = $('#winNo').textContent = st.num;
-  $('#cardLegend').innerHTML = b.k.map(k => { const [icon, color] = kStyle(k); return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('');
-  const draw = () => {
-    const on = new Set(st.marks);
-    const isOn = i => fields[i] === '*' || on.has(i);
-    const g = $('#cardGrid');
-    g.className = 'bgrid n' + b.s; g.style.setProperty('--n', b.s);
-    const winning = lines.filter(l => l.every(isOn));
-    const inLine = new Set(winning.flat());
-    g.innerHTML = fields.map((f, i) => bcell(b, f, `${on.has(i) ? 'on' : ''} ${inLine.has(i) ? 'line' : ''}`, `data-i="${i}"`)).join('');
-    $('#cardHits').textContent = `${on.size} markiert`;
-    if (winning.length && !won) { won = true; confetti(); $('#bingoWin').classList.remove('hidden'); }
-    if (!winning.length) won = false;
-  };
-  $('#cardGrid').addEventListener('click', e => {
-    const c = e.target.closest('[data-i]'); if (!c) return;
-    const i = +c.dataset.i; if (fields[i] === '*') return;
-    st.marks = st.marks.includes(i) ? st.marks.filter(x => x !== i) : [...st.marks, i];
-    LS.set(key, st); try { navigator.vibrate?.(10); } catch {}
-    draw();
-  });
-  $('#btnCardClear').onclick = async () => {
-    if (!await ask('Alle Markierungen löschen?', { ok: 'Löschen', danger: true })) return;
-    st.marks = []; LS.set(key, st); draw();
-  };
   $('#btnWinClose').onclick = () => $('#bingoWin').classList.add('hidden');
-  draw();
+  mountCard(b, { grid: $('#cardGrid'), no: $('#cardNo'), hits: $('#cardHits'), legend: $('#cardLegend'), clear: $('#btnCardClear') }, (num, initial) => {
+    if (num == null) return;
+    $('#winNo').textContent = num;
+    if (!initial) { confetti(); $('#bingoWin').classList.remove('hidden'); }
+  });
 }
+
+/* Eigene Karte des Spielleiters (im Menü „Punkte & Bingo“) */
+function renderMyCard() {
+  const b = state.bingo;
+  $('#myCardOff').classList.toggle('hidden', !!b);
+  $('#myCardOn').classList.toggle('hidden', !b);
+  if (!b) return;
+  mountCard(b, { grid: $('#myCardGrid'), no: $('#myCardNo'), hits: $('#myCardHits'), legend: $('#myCardLegend'), clear: $('#btnMyCardClear') }, (num, initial) => {
+    $('#myCardWin').classList.toggle('hidden', num == null);
+    if (num != null) { $('#myCardWinNo').textContent = num; if (!initial) { confetti(); beep(1046, .3); } }
+  });
+}
+const renderMyCardBtn = () => $('#myCardBtn').classList.toggle('hidden', !state.bingo);
 
 /* ---------------- Rendering ---------------- */
 function render() {
@@ -2175,7 +2220,7 @@ async function renderDevices() {
     sel.value = cur.id;
   } catch (e) { sel.innerHTML = `<option value="">Fehler</option>`; toast(e.message); }
 }
-function renderAll() { render(); renderHist(); renderStatus(); renderLib(); renderVolume(); renderScorebar(); }
+function renderAll() { render(); renderHist(); renderStatus(); renderLib(); renderVolume(); renderScorebar(); renderMyCardBtn(); }
 
 /* ---------------- Events ---------------- */
 const saveSettings = () => { LS.set('settings', state.settings); render(); };
@@ -2319,7 +2364,7 @@ $('#btnBingoNew').onclick = async () => {
 };
 $('#btnBingoOff').onclick = async () => {
   if (!await ask('Bingo beenden?', { ok: 'Beenden', danger: true })) return;
-  state.bingo = null; LS.del('bingo'); renderBingo(); renderPlayers();
+  state.bingo = null; LS.del('bingo'); renderBingo(); renderPlayers(); renderMyCardBtn();
 };
 $('#setLimit').onchange = e => { state.settings.limit = +e.target.value; saveSettings(); };
 $('#setHints').onchange = e => { state.settings.hints = e.target.checked; saveSettings(); };
