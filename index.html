@@ -1823,7 +1823,7 @@ const parseBingo = p => {
 };
 function cardFields(b, num) {
   const r = rng(hashStr(b.g + ':' + num));
-  const n = b.s * b.s, free = b.s % 2 === 1, slots = n - (free ? 1 : 0);
+  const n = b.s * b.s, free = false, slots = n;   // kein Gratisfeld in der Mitte
   // Kategorien gleichmäßig verteilen, Anordnung je Karte zufällig
   const start = Math.floor(r() * b.k.length);
   const arr = [...Array(slots)].map((_, i) => b.k[(start + i) % b.k.length].i);
