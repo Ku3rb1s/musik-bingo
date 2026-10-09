@@ -1,17 +1,18 @@
 {
+  "id": "/musik-bingo/",
   "name": "Musik-Bingo",
   "short_name": "Musik-Bingo",
   "description": "Musik-Quiz mit deinen Spotify-Playlists",
   "lang": "de",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/musik-bingo/",
+  "scope": "/musik-bingo/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d0a1a",
   "theme_color": "#0d0a1a",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/musik-bingo/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/musik-bingo/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/musik-bingo/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
