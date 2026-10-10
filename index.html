@@ -128,7 +128,8 @@ main{max-width:960px;margin:0 auto;padding:0 16px 40px}
   box-shadow:0 8px 24px -8px var(--cat);transition:background .4s}
 .cat-name{font-size:clamp(1.35rem,5.2vw,2.5rem);font-weight:900;line-height:1.12;text-align:left;overflow-wrap:anywhere}
 .cat.idle .cat-badge{background:rgba(255,255,255,.04);border-color:var(--line)}
-.cat.idle .cat-icon{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.cat.idle .cat-icon{background:linear-gradient(135deg,#ffa03c,#ff3878);overflow:hidden}
+.cat-icon img{width:100%;height:100%;object-fit:cover;display:block}
 .cat.spin .cat-name{opacity:.55;filter:blur(1.5px)}
 .cat.land .cat-badge{animation:land .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes land{0%{transform:scale(1.18)}100%{transform:scale(1)}}
@@ -149,7 +150,11 @@ main{max-width:960px;margin:0 auto;padding:0 16px 40px}
 .disc-wrap.playing .disc{animation-play-state:running}
 @keyframes rot{to{transform:rotate(360deg)}}
 .disc-label{position:absolute;inset:0;margin:auto;width:40%;height:40%;border-radius:50%;
-  background:radial-gradient(circle,var(--bg) 0 7%,transparent 7.5%),linear-gradient(135deg,var(--cat),var(--accent2));transition:background .4s}
+  background:radial-gradient(circle,var(--bg) 0 7%,transparent 7.5%),linear-gradient(135deg,var(--cat),#ff3878);transition:background .4s}
+/* Startbildschirm: Etikett wie im Logo (Sunset-Verlauf mit Bingo-Diagonale) */
+.label-grid{position:absolute;left:22%;top:22%;width:56%;height:56%;opacity:0;transition:opacity .3s}
+.disc-wrap.idle .label-grid{opacity:1}
+.disc-wrap.idle .disc-label{background:linear-gradient(135deg,#ffa03c,#ff3878)}
 .disc-num{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(2.4rem,9vw,3.6rem);font-weight:900;
   font-variant-numeric:tabular-nums;text-shadow:0 4px 18px rgba(0,0,0,.7);pointer-events:none}
 .disc-wrap.urgent .disc-num{color:var(--danger);animation:pulse 1s infinite}
@@ -583,7 +588,7 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
       <div class="flipper">
         <div class="face front">
           <svg class="ring-svg" viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="56"/><circle id="ring" class="ring" cx="60" cy="60" r="56"/></svg>
-          <div class="disc"><div class="disc-label"></div></div>
+          <div class="disc"><div class="disc-label"><svg class="label-grid" viewBox="0 0 30 30" aria-hidden="true"><g fill="rgba(255,255,255,.45)"><circle cx="15" cy="6" r="2.4"/><circle cx="24" cy="6" r="2.4"/><circle cx="6" cy="15" r="2.4"/><circle cx="24" cy="15" r="2.4"/><circle cx="6" cy="24" r="2.4"/><circle cx="15" cy="24" r="2.4"/></g><path d="M6 6L24 24" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><g fill="#fff"><circle cx="6" cy="6" r="3"/><circle cx="15" cy="15" r="3"/><circle cx="24" cy="24" r="3"/></g></svg></div></div>
           <div id="timerNum" class="disc-num"></div>
         </div>
         <div class="face back"><div id="discCover" class="disc-cover"></div></div>
@@ -2191,8 +2196,8 @@ function render() {
   if (!spinning) {
     if (round) showCat(round.cat);
     else {
-      $('#catIcon').textContent = '🎵';
-      document.documentElement.style.setProperty('--cat', '#1ed760');
+      $('#catIcon').innerHTML = '<img src="icon-192.png?v=5" alt="">';
+      document.documentElement.style.setProperty('--cat', '#ffa03c');
       $('#catName').textContent = !state.tracks.length ? 'Füge eine Playlist hinzu'
         : state.history.length ? `${state.history.length} ${state.history.length === 1 ? 'Runde' : 'Runden'} gespielt` : 'Bereit für das Spiel?';
     }
@@ -2200,6 +2205,7 @@ function render() {
   // Bei der Auflösung dreht sich die Platte um und zeigt das Cover
   const dw = $('#discWrap');
   dw.classList.toggle('flipped', ph === 'revealed');
+  dw.classList.toggle('idle', !round);
   dw.classList.toggle('counting', ph === 'countdown');
   if (ph !== 'countdown') { dw.classList.remove('urgent'); $('#timerNum').textContent = ph === 'playing' ? '?' : ''; }
   $('#reveal').classList.toggle('hidden', ph !== 'revealed');
@@ -2236,8 +2242,8 @@ function renderPlayState() {
   const dw = $('#discWrap');
   dw.classList.toggle('playing', Player.playing && !!round);
   // Symbol auf der Platte: Play wenn pausiert, „nochmal“ wenn der Ausschnitt vorbei ist
-  const replay = round?.snippetDone && round.phase !== 'revealed';
-  const paused = !!round && (!Player.playing || replay);
+  const replay = !!(round?.snippetDone && round.phase !== 'revealed');
+  const paused = !!round && (!Player.playing || replay);   // immer true/false – toggle() mit undefined würde umschalten
   // Auf dem Cover (nach der Auflösung) das Pause-Symbol nur kurz zeigen, damit das Cover sichtbar bleibt
   if (paused && !dw.classList.contains('paused') && round.phase === 'revealed') {
     dw.classList.add('peek'); clearTimeout(peekT); peekT = setTimeout(() => dw.classList.remove('peek'), 1400);
