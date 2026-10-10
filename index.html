@@ -10,9 +10,9 @@
 <link rel="apple-touch-icon" sizes="180x180" href="https://ku3rb1s.github.io/musik-bingo/apple-touch-icon.png">
 <link rel="apple-touch-icon" sizes="167x167" href="https://ku3rb1s.github.io/musik-bingo/apple-touch-icon-167.png">
 <link rel="apple-touch-icon" sizes="152x152" href="https://ku3rb1s.github.io/musik-bingo/apple-touch-icon-152.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3">
+<link rel="icon" href="favicon.ico?v=3" sizes="any">
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -464,6 +464,8 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
   color:#fff;opacity:0;transform:scale(.8);transition:opacity .25s,transform .25s;pointer-events:none}
 .disc-state .ic{width:30px;height:30px}
 .disc-wrap.paused .disc-state{opacity:1;transform:scale(1)}
+/* Nach der Auflösung: Symbol nur kurz zeigen, dann ausblenden – das Cover bleibt sichtbar, Antippen spielt trotzdem weiter */
+.disc-wrap.flipped.paused:not(.peek) .disc-state{opacity:0;transform:scale(.9);transition:opacity .6s,transform .6s}
 .disc-wrap.tapped .disc-state{animation:tapFlash .7s ease}
 @keyframes tapFlash{0%{opacity:1;transform:scale(1.3)}60%{opacity:1;transform:scale(1)}}
 .disc-wrap.paused:not(.counting):not(.flipped) .disc-num{opacity:0}
@@ -560,7 +562,7 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
 <div class="bg"><i></i><i></i><i></i></div>
 
 <header>
-  <div class="logo"><img src="icon-192.png" alt=""><span>Musik-Bingo</span></div>
+  <div class="logo"><img src="icon-192.png?v=3" alt=""><span>Musik-Bingo</span></div>
   <div class="hdr-r">
     <button class="hbtn" id="btnGame" aria-label="Punkte & Bingo"><svg class="ic"><use href="#i-trophy"/></svg><span class="lbl">Punkte & Bingo</span></button>
     <button class="hbtn" id="btnLib" aria-label="Playlists"><svg class="ic"><use href="#i-playlist"/></svg><span class="lbl">Playlists</span></button>
@@ -763,7 +765,7 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
       <!-- nicht verbunden -->
       <div id="accOut">
         <div class="welcome">
-          <img class="big-ic" src="icon-192.png" alt="">
+          <img class="big-ic" src="icon-192.png?v=3" alt="">
           <h3>Mit Spotify anmelden</h3>
           <p>Melde dich an, um deine Playlists ins Spiel zu holen und Musik abzuspielen.</p>
         </div>
@@ -839,7 +841,7 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
     <section class="page" data-page="bingo" data-title="Bingo-Karten">
       <div id="bingoOff">
         <div class="welcome">
-          <img class="big-ic" src="icon-192.png" alt="">
+          <img class="big-ic" src="icon-192.png?v=3" alt="">
           <h3>Bingo-Karten fürs Handy</h3>
           <p>Jeder Mitspieler scannt einen QR-Code und bekommt eine eigene Karte – ohne Anmeldung, ohne App.</p>
         </div>
@@ -909,7 +911,7 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
 <!-- Karten-Ansicht für Mitspieler (über den QR-Code) -->
 <div id="cardApp" class="hidden">
   <div class="card-head">
-    <div class="logo"><img src="icon-192.png" alt=""><span>Musik-Bingo</span></div>
+    <div class="logo"><img src="icon-192.png?v=3" alt=""><span>Musik-Bingo</span></div>
     <span class="pill">Karte Nr. <b id="cardNo"></b></span>
   </div>
   <div class="glass guess-wrap">
@@ -1663,8 +1665,11 @@ async function nextRound() {
   if (!cats.length) return toast('Keine Kategorie aktiv – siehe Einstellungen');
   Player.unlock(); keepScreenOn();
   stopTimer(); clearTimeout(snippetT);
+  // Für „Rückgängig“: vorherige Runde merken
+  const prev = round ? { round, played: state.played.slice() } : null;
   let pool = state.tracks.filter(t => !state.played.includes(t.id));
-  if (!pool.length) { toast('Alle Songs wurden gespielt – Liste wird neu gemischt 🔀'); state.played = []; pool = state.tracks.slice(); }
+  let reshuffled = false;
+  if (!pool.length) { reshuffled = true; state.played = []; pool = state.tracks.slice(); }
   const track = pool[Math.floor(Math.random() * pool.length)];
   const cat = cats[Math.floor(Math.random() * cats.length)];
   state.played.push(track.id); LS.set('played', state.played);
@@ -1673,7 +1678,18 @@ async function nextRound() {
   spinCategory(cat);
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (reshuffled) toast('Alle Songs wurden gespielt – die Liste wird neu gemischt');
+  else if (prev) toast(prev.round.phase === 'revealed' ? 'Nächster Song' : 'Song übersprungen', 5000, { label: 'Rückgängig', fn: () => undoNext(prev) });
   await playSnippet();
+}
+// Zurück zur vorherigen Runde (versehentlich „Nächster Song“ oder „Überspringen“ getippt)
+function undoNext(prev) {
+  stopTimer(); clearTimeout(snippetT); cancelSpin();
+  round = prev.round;
+  if (round.phase === 'countdown') round.phase = 'playing';
+  state.played = prev.played; LS.set('played', state.played);
+  render();
+  playSnippet();
 }
 // Spielt den Song der Runde – bei begrenzter Song-Länge nur einen Ausschnitt
 let snippetT;
@@ -1698,14 +1714,22 @@ function showCat(c) {
   $('#catName').textContent = c.name; $('#catIcon').textContent = icon;
   document.documentElement.style.setProperty('--cat', color);
 }
+let spinTimers = null;
+function cancelSpin() {
+  if (!spinTimers) return;
+  clearInterval(spinTimers.iv); clearTimeout(spinTimers.to); spinTimers = null;
+  spinning = false; $('#cat').classList.remove('spin');
+}
 function spinCategory(final) {
+  cancelSpin();
   const cats = state.cats.filter(c => c.enabled);
   const box = $('#cat');
   spinning = true; box.classList.remove('idle'); box.classList.add('spin');
   let i = Math.floor(Math.random() * cats.length);
   const iv = setInterval(() => { showCat(cats[i++ % cats.length]); beep(300 + (i % 5) * 60, .03, .05); }, 85);
-  setTimeout(() => {
-    clearInterval(iv); spinning = false;
+  spinTimers = { iv, to: 0 };
+  spinTimers.to = setTimeout(() => {
+    clearInterval(iv); spinning = false; spinTimers = null;
     showCat(final); box.classList.remove('spin');
     box.classList.add('land'); setTimeout(() => box.classList.remove('land'), 550);
     beep(660, .15);
@@ -2212,10 +2236,16 @@ function renderPlayState() {
   dw.classList.toggle('playing', Player.playing && !!round);
   // Symbol auf der Platte: Play wenn pausiert, „nochmal“ wenn der Ausschnitt vorbei ist
   const replay = round?.snippetDone && round.phase !== 'revealed';
-  dw.classList.toggle('paused', !!round && (!Player.playing || replay));
+  const paused = !!round && (!Player.playing || replay);
+  // Auf dem Cover (nach der Auflösung) das Pause-Symbol nur kurz zeigen, damit das Cover sichtbar bleibt
+  if (paused && !dw.classList.contains('paused') && round.phase === 'revealed') {
+    dw.classList.add('peek'); clearTimeout(peekT); peekT = setTimeout(() => dw.classList.remove('peek'), 1400);
+  }
+  dw.classList.toggle('paused', paused);
   dw.classList.toggle('tappable', !!round || state.tracks.length > 0);
   $('#discState').innerHTML = round ? ic(replay ? 'restart' : Player.playing ? 'pause' : 'play') : '';
 }
+let peekT;
 // Platte antippen: Musik pausieren/fortsetzen bzw. Ausschnitt nochmal spielen
 function discTap() {
   if (!round) { if (state.tracks.length) { resetGame(); nextRound(); } return; }
