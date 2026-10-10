@@ -33,7 +33,7 @@
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;background:var(--bg)}
 html,body{margin:0}
 body{
-  font-family:Outfit,-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;color:var(--text);letter-spacing:-.01em;
   min-height:100vh;min-height:100dvh;background:var(--bg);overflow-x:hidden;overscroll-behavior-y:none;
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
 }
@@ -165,7 +165,7 @@ main{max-width:960px;margin:0 auto;padding:0 16px 40px}
 .rv-q{color:var(--muted);font-size:.85rem}
 .rv-a{font-size:clamp(1.5rem,5vw,2.4rem);font-weight:900;color:var(--cat);margin-top:2px;overflow-wrap:anywhere;line-height:1.15}
 .rv-a .small{color:var(--muted);font-weight:500}
-.rv-song{display:flex;gap:18px;align-items:center;text-align:left;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:20px;padding:14px}
+.rv-song{text-align:center;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:20px;padding:14px 16px}
 .cover{width:132px;height:132px;border-radius:14px;object-fit:cover;background:rgba(0,0,0,.4);flex:none;display:grid;place-items:center;font-size:2.6rem;
   box-shadow:0 14px 30px -12px rgba(0,0,0,.8)}
 .rv-title{font-size:1.3rem;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
@@ -421,6 +421,36 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
 .bcell.on,.bcell.free{background-image:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,0) 60%)}
 .qr-box{box-shadow:0 20px 50px -15px rgba(0,0,0,.6),inset 0 1px 0 #fff}
 
+/* ---------- Schrift: Systemschrift für Bedienung, Outfit nur für große Überschriften ---------- */
+.logo,.cat-name,.cat-kicker,.rv-a,.rv-title,.lib-num,.disc-num,.win .big-word,.welcome h3,.profile .name,.pl-row .score,.check-res,
+button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;letter-spacing:0}
+
+/* ---------- Auflösung: Platte dreht sich um und zeigt das Cover ---------- */
+.disc-wrap{perspective:1200px;transition:margin .5s}
+.flipper{position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.25,1.3,.4,1)}
+.disc-wrap.flipped .flipper{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face.back{transform:rotateY(180deg)}
+.disc-cover{position:absolute;inset:6%;border-radius:24px;overflow:hidden;display:grid;place-items:center;font-size:5rem;color:#fff;
+  background:linear-gradient(135deg,var(--cat),var(--accent2));box-shadow:0 28px 60px -18px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.12)}
+.disc-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.disc-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(140deg,rgba(255,255,255,.28),rgba(255,255,255,0) 38%);pointer-events:none}
+.disc-wrap.flipped{margin-bottom:6px}
+
+/* ---------- „•••“-Menü als iOS-Aktionsblatt ---------- */
+.action-sheet{width:min(440px,calc(100vw - 20px));max-width:none;margin:auto auto calc(max(var(--sab), 10px) + 6px);padding:0;background:transparent;border:0;overflow:visible}
+.action-sheet[open]{animation:sheetUp .32s cubic-bezier(.2,.9,.3,1)}
+.action-sheet::backdrop{background:rgba(5,3,12,.45)}
+.as-group,.as-cancel{background:rgba(40,33,76,.72);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+  border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 50px -10px rgba(0,0,0,.7);border-radius:20px;overflow:hidden}
+.as-item{display:flex;align-items:center;gap:14px;width:100%;padding:16px 20px;background:none;border-radius:0;color:var(--text);font-weight:500;font-size:1.05rem;justify-content:flex-start;transform:none!important}
+.as-item+.as-item{border-top:1px solid rgba(255,255,255,.08)}
+.as-item .ic{width:22px;height:22px;color:var(--accent)}
+.as-item[data-danger],.as-item[data-danger] .ic{color:var(--danger)}
+.as-item:active{background:rgba(255,255,255,.08)}
+.as-item:disabled{opacity:.4}
+.as-cancel{display:block;width:100%;margin-top:8px;padding:16px;color:var(--text);font-weight:700;font-size:1.05rem;transform:none!important}
+
 /* ---------- Handy ---------- */
 @media (max-width:640px){
   header{padding:calc(var(--sat) + 16px) 14px 12px}
@@ -438,17 +468,15 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
   .controls{position:fixed;left:10px;right:10px;bottom:calc(max(var(--sab), 6px) + 6px);z-index:20;padding:8px;gap:6px;border-radius:32px;
     background:rgba(34,27,64,.5);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);
     border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 44px -14px rgba(0,0,0,.75);flex-wrap:wrap}
-  .controls .big{flex:1 1 100%;padding:.9em 1em;border-radius:26px}
-  .controls .ghost{flex:1 1 0;flex-direction:column;gap:3px;padding:.55em .3em;font-size:.74rem;font-weight:600;border-radius:22px;
+  .controls{flex-wrap:nowrap;align-items:stretch}
+  .controls .big{flex:1 1 auto;min-width:0;padding:.9em .8em;border-radius:26px;font-size:1.02rem}
+  .controls .ghost{flex:0 0 auto;min-width:64px;flex-direction:column;gap:3px;padding:.55em .3em;font-size:.74rem;font-weight:600;border-radius:22px;
     background:transparent;border-color:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
   .controls .ghost:active{background:rgba(255,255,255,.12)}
   .controls .ghost .ic{width:22px;height:22px}
-  .controls.duo{flex-wrap:nowrap}
-  .controls.duo .big{flex:1 1 0;min-width:0}
-  .controls.duo .ghost{flex:0 0 76px}
   .volume,.hint{display:none}
   .reveal{margin:14px auto 6px}
-  .rv-song{flex-direction:column;text-align:center;gap:12px}
+  .rv-song{padding:12px}
   .tags{justify-content:center}
   .cover{width:min(190px,55vw);height:min(190px,55vw)}
   .hist{padding:2px 16px}
@@ -495,6 +523,8 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
   <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
   <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 7.5L20 18M8 16.5L20 6"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.9" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></symbol>
 </svg>
 <div class="bg"><i></i><i></i><i></i></div>
@@ -516,10 +546,16 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
       <div class="cat-badge"><div id="catIcon" class="cat-icon">🎵</div><div id="catName" class="cat-name">Bereit?</div></div>
     </div>
     <div id="hintBox" class="hintbox hidden"></div>
+    <!-- Vorderseite: Schallplatte mit Countdown-Ring · Rückseite: Album-Cover (dreht sich bei der Auflösung) -->
     <div id="discWrap" class="disc-wrap">
-      <svg class="ring-svg" viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="56"/><circle id="ring" class="ring" cx="60" cy="60" r="56"/></svg>
-      <div class="disc"><div class="disc-label"></div></div>
-      <div id="timerNum" class="disc-num"></div>
+      <div class="flipper">
+        <div class="face front">
+          <svg class="ring-svg" viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="56"/><circle id="ring" class="ring" cx="60" cy="60" r="56"/></svg>
+          <div class="disc"><div class="disc-label"></div></div>
+          <div id="timerNum" class="disc-num"></div>
+        </div>
+        <div class="face back"><div id="discCover" class="disc-cover"></div></div>
+      </div>
     </div>
     <div id="reveal" class="reveal hidden"></div>
     <div id="controls" class="controls"></div>
@@ -817,9 +853,9 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
       </div>
       <div id="myCardOn">
         <div class="guess-wrap glass-lite">
-          <div class="guess-head"><span>✍️ Dein Tipp</span><button class="link small" id="btnMyGuessClear">Löschen</button></div>
+          <div class="guess-head"><span>Dein Tipp</span><button class="link small" id="btnMyGuessClear">Löschen</button></div>
           <textarea id="myGuessText" class="guess-input" rows="2" maxlength="80" placeholder="z. B. Queen – 1975" autocomplete="off" spellcheck="false" enterkeyhint="done"></textarea>
-          <button class="big full" id="btnMyGuessShow">👀 Tipp zeigen</button>
+          <button class="big full" id="btnMyGuessShow"><svg class="ic"><use href="#i-eye"/></svg> Tipp zeigen</button>
         </div>
         <div class="card-top" style="margin-top:14px"><span class="pill">Karte Nr. <b id="myCardNo"></b></span><span class="pill" id="myCardHits"></span></div>
         <div id="myCardWin" class="check-res won hidden">🎉 BINGO! Ruf es laut – Karte Nr. <span id="myCardWinNo"></span></div>
@@ -841,9 +877,9 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
     <span class="pill">Karte Nr. <b id="cardNo"></b></span>
   </div>
   <div class="glass guess-wrap">
-    <div class="guess-head"><span>✍️ Dein Tipp</span><button class="link small" id="btnGuessClear">Löschen</button></div>
+    <div class="guess-head"><span>Dein Tipp</span><button class="link small" id="btnGuessClear">Löschen</button></div>
     <textarea id="guessText" class="guess-input" rows="2" maxlength="80" placeholder="z. B. Queen – 1975" autocomplete="off" spellcheck="false" enterkeyhint="done"></textarea>
-    <button class="big full" id="btnGuessShow">👀 Tipp zeigen</button>
+    <button class="big full" id="btnGuessShow"><svg class="ic"><use href="#i-eye"/></svg> Tipp zeigen</button>
   </div>
   <div class="glass card-wrap">
     <div class="card-top"><span class="pill" id="cardHits"></span><button class="link small" id="btnCardClear">Markierungen löschen</button></div>
@@ -859,6 +895,12 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
     <button class="ghost" id="btnWinClose">Weiter</button>
   </div>
 </div>
+
+<!-- „•••“-Menü: alle Nebenaktionen der Runde -->
+<dialog id="moreMenu" class="action-sheet">
+  <div class="as-group" id="moreItems"></div>
+  <button class="as-cancel" data-close>Abbrechen</button>
+</dialog>
 
 <!-- Tipp im Vollbild zum Herzeigen -->
 <dialog id="guessShow" class="guess-show">
@@ -1073,7 +1115,7 @@ function onPage(id, page) {
 document.querySelectorAll('dialog').forEach(d => {
   d.addEventListener('close', () => { if (!document.querySelector('dialog.sheet[open]')) document.body.classList.remove('locked'); });
   // Tippen neben das Sheet schließt es
-  d.addEventListener('click', e => { if (e.target === d && d.classList.contains('sheet')) d.close(); });
+  d.addEventListener('click', e => { if (e.target === d && (d.classList.contains('sheet') || d.classList.contains('action-sheet'))) d.close(); });
 });
 // Sheets wie in iOS nach unten wegwischen: an der Kopfzeile oder am Inhalt, wenn er ganz oben ist
 document.querySelectorAll('dialog.sheet').forEach(d => {
@@ -2100,39 +2142,54 @@ function render() {
         : state.history.length ? `${state.history.length} ${state.history.length === 1 ? 'Runde' : 'Runden'} gespielt` : 'Bereit für das Spiel?';
     }
   }
+  // Bei der Auflösung dreht sich die Platte um und zeigt das Cover
   const dw = $('#discWrap');
-  dw.classList.toggle('hidden', ph === 'revealed');
+  dw.classList.toggle('flipped', ph === 'revealed');
   dw.classList.toggle('counting', ph === 'countdown');
   if (ph !== 'countdown') { dw.classList.remove('urgent'); $('#timerNum').textContent = ph === 'playing' ? '?' : ''; }
   $('#reveal').classList.toggle('hidden', ph !== 'revealed');
   if (ph === 'revealed') renderReveal();
 
   renderHints();
-  const pp = `<button class="ghost" data-act="toggle" id="ppBtn"></button>`;
-  const hintsLeft = round && state.settings.hints && (round.hints || 0) < hintsFor(round.cat, round.track).length;
-  const hb = state.settings.hints && round ? `<button class="ghost" data-act="hint" ${hintsLeft ? '' : 'disabled'}>${ic('bulb')}<span>Tipp</span></button>` : '';
+  // Pro Moment ein Hauptknopf; alles Weitere liegt im „•••“-Menü
+  const more = `<button class="ghost" data-act="more" aria-label="Mehr">${ic('dots')}<span>Mehr</span></button>`;
   const c = {
     idle: !state.tracks.length
       ? `<button class="big" data-act="lib">${ic('plus')} Playlist hinzufügen</button>`
       : state.history.length
-        ? `<button class="big" data-act="start">${ic('play')} Neues Spiel starten</button><button class="ghost" data-act="next">${ic('skip')}<span>Weiterspielen</span></button>`
+        ? `${more}<button class="big" data-act="next">${ic('play')} Weiterspielen</button>`
         : `<button class="big" data-act="start">${ic('play')} Spiel starten</button>`,
-    playing: `<button class="big" data-act="countdown">${ic('timer')} Countdown starten · ${state.settings.seconds} s</button>
-              ${pp}${hb}<button class="ghost" data-act="reveal">${ic('eye')}<span>Auflösen</span></button><button class="ghost" data-act="next">${ic('skip')}<span>Skip</span></button>`,
-    countdown: `<button class="big pink" data-act="reveal">${ic('eye')} Jetzt auflösen</button>${pp}${hb}`,
-    revealed: `<button class="big" data-act="next">${ic('skip')} Nächster Song</button>${pp}`,
+    playing: `${more}<button class="ghost" data-act="reveal">${ic('eye')}<span>Auflösen</span></button>
+              <button class="big" data-act="countdown">${ic('timer')} Countdown · ${state.settings.seconds} s</button>`,
+    countdown: `${more}<button class="big pink" data-act="reveal">${ic('eye')} Jetzt auflösen</button>`,
+    revealed: `${more}<button class="big" data-act="next">${ic('skip')} Nächster Song</button>`,
   }[ph];
-  const ctl = $('#controls');
-  ctl.innerHTML = c;
-  ctl.classList.toggle('duo', ctl.querySelectorAll('.ghost').length === 1);
+  $('#controls').innerHTML = c;
   renderPlayState();
 }
 function renderPlayState() {
   $('#discWrap').classList.toggle('playing', Player.playing && !!round);
-  const b = $('#ppBtn');
-  if (!b) return;
-  if (round?.snippetDone && round.phase !== 'revealed') b.innerHTML = `${ic('restart')}<span>Nochmal</span>`;
-  else b.innerHTML = Player.playing ? `${ic('pause')}<span>Pause</span>` : `${ic('play')}<span>Play</span>`;
+}
+// Inhalt des „•••“-Menüs je nach Spielphase
+function openMore() {
+  const ph = round?.phase || 'idle';
+  const items = [];
+  const item = (act, icon, label, extra = '') => items.push(`<button class="as-item" data-act="${act}" ${extra}>${ic(icon)}<span>${label}</span></button>`);
+  if (round) {
+    if (round.snippetDone && ph !== 'revealed') item('toggle', 'restart', 'Ausschnitt nochmal spielen');
+    else item('toggle', Player.playing ? 'pause' : 'play', Player.playing ? 'Musik pausieren' : 'Musik weiterspielen');
+  }
+  if (round && ph !== 'revealed' && state.settings.hints) {
+    const left = hintsFor(round.cat, round.track).length - (round.hints || 0);
+    item('hint', 'bulb', left > 0 ? `Tipp anzeigen (${left} übrig)` : 'Keine Tipps mehr', left > 0 ? '' : 'disabled');
+  }
+  if (round && ph !== 'revealed') item('next', 'skip', 'Song überspringen');
+  if (ph === 'revealed') item('fixYear', 'pen', 'Jahr korrigieren');
+  if (state.bingo) item('mycard', 'grid', 'Meine Bingo-Karte');
+  item('game', 'trophy', 'Punkte & Bingo');
+  if (!round && state.history.length) item('newgame', 'restart', 'Neues Spiel starten', 'data-danger');
+  $('#moreItems').innerHTML = items.join('');
+  $('#moreMenu').showModal();
 }
 function renderReveal() {
   const t = round.track, y = yearOf(t), cat = round.cat;
@@ -2144,25 +2201,23 @@ function renderReveal() {
       <div class="award-h">Wer lag richtig? <b>+${pts} ${pts === 1 ? 'Punkt' : 'Punkte'}</b></div>
       <div class="chips">${state.players.map(p => `<button class="chip-btn ${round.awarded?.[p.id] ? 'on' : ''}" data-award="${p.id}">${round.awarded?.[p.id] ? '✓ ' : ''}${esc(p.name)}</button>`).join('')}</div>
     </div>` : '';
+  // Das Cover steht groß auf der Rückseite der Platte – hier nur Antwort und Song-Infos
+  $('#discCover').innerHTML = t.cover ? `<img src="${esc(t.cover)}" alt="">` : '<span>♪</span>';
   $('#reveal').innerHTML = `
     <div class="rv-answer">
       <div class="rv-q">${esc(cat.name)}</div>
       <div class="rv-a">${answerFor(cat, t)}</div>
     </div>
     <div class="rv-song">
-      ${t.cover ? `<img class="cover" src="${esc(t.cover)}" alt="">` : `<div class="cover">💿</div>`}
-      <div style="min-width:0">
-        <div class="rv-title">${esc(t.title)}</div>
-        <div class="rv-artist">${esc(t.artists)}</div>
-        <div class="rv-meta">${t.album ? '💿 ' + esc(t.album) : ''}${t.date ? ' · ' + esc(t.date) : ''}</div>
-        <div class="tags">
-          <span>📅 ${y ?? '?'}${fixed ? ' (korrigiert)' : fromMb ? ' · Original' : ''}</span>
-          <span>🕰 ${decadeOf(y)}</span>
-          ${y ? `<span>± 3: ${y - 3}–${y + 3}</span>` : ''}
-        </div>
-        ${fromMb ? `<div class="rv-meta" style="margin-bottom:4px">Spotify nennt ${t.year} (Album/Remaster) – Originaljahr laut MusicBrainz.</div>` : ''}
-        <button class="link small" data-act="fixYear">Jahr korrigieren</button>
+      <div class="rv-title">${esc(t.title)}</div>
+      <div class="rv-artist">${esc(t.artists)}</div>
+      <div class="rv-meta">${[t.album, t.date].filter(Boolean).map(esc).join(' · ')}</div>
+      <div class="tags">
+        <span>Jahr ${y ?? '?'}${fixed ? ' (korrigiert)' : fromMb ? ' · Original' : ''}</span>
+        <span>${decadeOf(y)}</span>
+        ${y ? `<span>± 3: ${y - 3}–${y + 3}</span>` : ''}
       </div>
+      ${fromMb ? `<div class="rv-meta">Spotify nennt ${t.year} (Album/Remaster) – Originaljahr laut MusicBrainz.</div>` : ''}
     </div>${award}`;
   loadCover(t);
 }
@@ -2302,7 +2357,13 @@ const saveCats = () => { LS.set('cats', state.cats); renderCats(); renderSetting
 document.addEventListener('click', async e => {
   const t = e.target;
   const a = t.closest('[data-act]')?.dataset.act;
-  if (a === 'start') { resetGame(); nextRound(); }
+  // Auswahl im „•••“-Menü schließt das Menü zuerst
+  if (a && t.closest('#moreMenu')) $('#moreMenu').close();
+  if (a === 'more') openMore();
+  else if (a === 'game') openSheet('sheetGame');
+  else if (a === 'mycard') openSheet('sheetGame', 'mycard');
+  else if (a === 'newgame') askNewGame();
+  else if (a === 'start') { resetGame(); nextRound(); }
   else if (a === 'next') nextRound();
   else if (a === 'countdown') startCountdown();
   else if (a === 'reveal') reveal();
