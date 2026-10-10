@@ -32,7 +32,7 @@
 :root{
   --glass:rgba(var(--surf),.62);
   --accent:#1ed760;--accent2:#ff4fa3;--warn:#ffb020;--danger:#ff5a6a;--line:rgba(255,255,255,.09);
-  --cell:rgba(255,255,255,.055);--cat:#1ed760;--radius:24px;
+  --cell:rgba(255,255,255,.055);--cat:#ffa03c;--radius:24px;
   --sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -177,8 +177,6 @@ main{max-width:960px;margin:0 auto;padding:0 16px 40px}
 .rv-a{font-size:clamp(1.5rem,5vw,2.4rem);font-weight:900;color:var(--cat);margin-top:2px;overflow-wrap:anywhere;line-height:1.15}
 .rv-a .small{color:var(--muted);font-weight:500}
 .rv-song{text-align:center;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:20px;padding:14px 16px}
-.cover{width:132px;height:132px;border-radius:14px;object-fit:cover;background:rgba(0,0,0,.4);flex:none;display:grid;place-items:center;font-size:2.6rem;
-  box-shadow:0 14px 30px -12px rgba(0,0,0,.8)}
 .rv-title{font-size:1.3rem;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
 .rv-artist{font-size:1.02rem;color:var(--accent2);font-weight:600;margin:3px 0 6px}
 .rv-meta{color:var(--muted);font-size:.85rem}
@@ -252,13 +250,9 @@ button.cell{transform:none!important;filter:none!important}
 .pl-cover{width:44px;height:44px;border-radius:8px;object-fit:cover;flex:none;background:rgba(0,0,0,.35);display:grid;place-items:center;color:var(--muted);font-size:1.2rem}
 .group.icons .pl-cover+.grow{margin-left:0}
 .loader{width:18px;height:18px;border:2px solid rgba(255,255,255,.18);border-top-color:var(--accent);border-radius:50%;animation:rot .8s linear infinite}
-details.cell-d summary{list-style:none}
-details.cell-d summary::-webkit-details-marker{display:none}
-details.cell-d[open] .chev{transform:rotate(90deg)}
-details.cell-d{position:relative}
 
 .lib-hero{text-align:center;padding:18px 10px 6px}
-.lib-num{font-size:3.2rem;font-weight:900;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lib-num{font-size:3.2rem;font-weight:900;line-height:1;color:var(--text)}
 .lib-sub{color:var(--muted);margin-top:6px;font-size:.92rem}
 .profile{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 10px 8px;text-align:center}
 .avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:2.2rem;font-weight:800;color:#fff}
@@ -348,7 +342,6 @@ details.cell-d{position:relative}
 .check-res.won{color:var(--accent)}
 .check-res.no{color:var(--muted);font-weight:600;font-size:.98rem}
 .chip-scroll{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0}
-.decade-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
 
 /* Karten-Ansicht für Mitspieler */
 body.card-mode>header,body.card-mode>main{display:none}
@@ -434,7 +427,7 @@ dialog::backdrop{background:rgba(var(--deep),.42)}
 
 /* ---------- Schrift: Systemschrift für Bedienung, Outfit nur für große Überschriften ---------- */
 .logo,.cat-name,.cat-kicker,.rv-a,.rv-title,.lib-num,.disc-num,.win .big-word,.welcome h3,.profile .name,.pl-row .score,.check-res,
-button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;letter-spacing:0}
+button.big{font-family:Outfit,-apple-system,system-ui,sans-serif;letter-spacing:0}
 
 /* ---------- Auflösung: Platte dreht sich um und zeigt das Cover ---------- */
 .disc-wrap{perspective:1200px;transition:margin .5s}
@@ -447,20 +440,6 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
 .disc-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .disc-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(140deg,rgba(255,255,255,.28),rgba(255,255,255,0) 38%);pointer-events:none}
 .disc-wrap.flipped{margin-bottom:6px}
-
-/* ---------- „•••“-Menü als iOS-Aktionsblatt ---------- */
-.action-sheet{width:min(440px,calc(100vw - 20px));max-width:none;margin:auto auto calc(max(var(--sab), 10px) + 6px);padding:0;background:transparent;border:0;overflow:visible}
-.action-sheet[open]{animation:sheetUp .32s cubic-bezier(.2,.9,.3,1)}
-.action-sheet::backdrop{background:rgba(var(--deep),.45)}
-.as-group,.as-cancel{background:rgba(var(--surf),.72);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
-  border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 50px -10px rgba(0,0,0,.7);border-radius:20px;overflow:hidden}
-.as-item{display:flex;align-items:center;gap:14px;width:100%;padding:16px 20px;background:none;border-radius:0;color:var(--text);font-weight:500;font-size:1.05rem;justify-content:flex-start;transform:none!important}
-.as-item+.as-item{border-top:1px solid rgba(255,255,255,.08)}
-.as-item .ic{width:22px;height:22px;color:var(--accent)}
-.as-item[data-danger],.as-item[data-danger] .ic{color:var(--danger)}
-.as-item:active{background:rgba(255,255,255,.08)}
-.as-item:disabled{opacity:.4}
-.as-cancel{display:block;width:100%;margin-top:8px;padding:16px;color:var(--text);font-weight:700;font-size:1.05rem;transform:none!important}
 
 /* ---------- Platte antippen = Play/Pause ---------- */
 .disc-wrap.tappable{cursor:pointer}
@@ -515,7 +494,6 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
   .reveal{margin:14px auto 6px}
   .rv-song{padding:12px}
   .tags{justify-content:center}
-  .cover{width:min(190px,55vw);height:min(190px,55vw)}
   .hist{padding:2px 16px}
   /* Sheets kommen von unten wie in iOS */
   .sheet{width:100vw;max-width:100vw;height:calc(100dvh - max(var(--sat), 20px) - 24px);margin:auto 0 0;border-radius:28px 28px 0 0;border-bottom:0}
@@ -552,15 +530,12 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
   <symbol id="i-logout" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M9 16l-4-4 4-4M5 12h11"/></symbol>
   <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/></symbol>
   <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></symbol>
-  <symbol id="i-speaker" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><circle cx="12" cy="14.5" r="3.5"/><circle cx="12" cy="7" r="1"/></symbol>
   <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4.5M16 6h3a3 3 0 0 1-3 4.5M12 13v4M8.5 20.5h7M10 17h4v3.5h-4z"/></symbol>
   <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
   <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></symbol>
   <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
   <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></symbol>
-  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
   <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8 7.5L20 18M8 16.5L20 6"/></symbol>
-  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.9" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.9" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></symbol>
 </svg>
@@ -604,7 +579,7 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
       <input type="range" id="vol" min="0" max="100" step="1" aria-label="Lautstärke">
       <span id="volVal" style="min-width:3ch;text-align:right"></span>
     </div>
-    <p class="hint"><kbd>Leertaste</kbd> nächster Schritt · <kbd>↑</kbd><kbd>↓</kbd> Lautstärke</p>
+    <p class="hint"><kbd>Leertaste</kbd> nächster Schritt · <kbd>P</kbd> Pause · <kbd>↑</kbd><kbd>↓</kbd> Lautstärke</p>
   </section>
 
   <button id="myCardBtn" class="ghost mycard-btn hidden" data-open="sheetGame:mycard"><svg class="ic"><use href="#i-grid"/></svg>Meine Bingo-Karte</button>
@@ -1152,7 +1127,7 @@ function onPage(id, page) {
 document.querySelectorAll('dialog').forEach(d => {
   d.addEventListener('close', () => { if (!document.querySelector('dialog.sheet[open]')) document.body.classList.remove('locked'); });
   // Tippen neben das Sheet schließt es
-  d.addEventListener('click', e => { if (e.target === d && (d.classList.contains('sheet') || d.classList.contains('action-sheet'))) d.close(); });
+  d.addEventListener('click', e => { if (e.target === d && d.classList.contains('sheet')) d.close(); });
 });
 // Sheets wie in iOS nach unten wegwischen: an der Kopfzeile oder am Inhalt, wenn er ganz oben ist
 document.querySelectorAll('dialog.sheet').forEach(d => {
@@ -2256,7 +2231,8 @@ let peekT;
 // Platte antippen: Musik pausieren/fortsetzen bzw. Ausschnitt nochmal spielen
 function discTap() {
   if (!round) { if (state.tracks.length) { resetGame(); nextRound(); } return; }
-  if (round.snippetDone && round.phase !== 'revealed') playSnippet();
+  // Ausschnitt vorbei oder noch nie erfolgreich gestartet (z. B. Spotify schlief) → neu abspielen
+  if ((round.snippetDone && round.phase !== 'revealed') || !Player.mode) playSnippet();
   else Player.toggle();
   const dw = $('#discWrap');
   dw.classList.remove('tapped'); void dw.offsetWidth; dw.classList.add('tapped');
@@ -2430,17 +2406,11 @@ document.addEventListener('click', async e => {
   const t = e.target;
   const a = t.closest('[data-act]')?.dataset.act;
   if (t.closest('#discWrap')) discTap();
-  if (a === 'game') openSheet('sheetGame');
-  else if (a === 'mycard') openSheet('sheetGame', 'mycard');
-  else if (a === 'newgame') askNewGame();
+  if (a === 'newgame') askNewGame();
   else if (a === 'start') { resetGame(); nextRound(); }
   else if (a === 'next') nextRound();
   else if (a === 'countdown') startCountdown();
   else if (a === 'reveal') reveal();
-  else if (a === 'toggle') {
-    if (round?.snippetDone && round.phase !== 'revealed') playSnippet();
-    else Player.toggle();
-  }
   else if (a === 'hint') giveHint();
   else if (a === 'lib') needSongs();
   else if (a === 'fixYear') fixYear();
@@ -2496,6 +2466,7 @@ document.addEventListener('keydown', e => {
   if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
     e.preventDefault(); setVolume(state.settings.volume + (e.code === 'ArrowUp' ? 5 : -5)); return;
   }
+  if (e.code === 'KeyP' && round) { e.preventDefault(); discTap(); return; }
   if (e.code !== 'Space' || e.target.tagName === 'BUTTON') return;
   e.preventDefault();
   const ph = round?.phase || 'idle';
