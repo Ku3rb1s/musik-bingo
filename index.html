@@ -21,7 +21,7 @@
 <meta name="format-detection" content="telephone=no">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0d0a1a;--sheet:#15112a;--glass:rgba(30,24,58,.62);--text:#f5f2ff;--muted:#a49dc6;
@@ -350,6 +350,26 @@ body.card-mode>header,body.card-mode>main{display:none}
 .win{position:fixed;inset:0;z-index:150;display:grid;place-items:center;background:rgba(5,3,12,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;padding:20px}
 .win .big-word{font-size:clamp(3.5rem,18vw,7rem);font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;animation:land .6s cubic-bezier(.3,1.6,.5,1)}
 .win p{font-size:1.15rem;margin:6px 0 20px}
+
+/* Tipp-Zettel in Handschrift */
+.guess-wrap{padding:14px 16px 16px;margin-bottom:14px}
+.glass-lite{background:rgba(255,255,255,.06);border:1px solid var(--g-brd, rgba(255,255,255,.15));border-radius:20px;margin-top:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.guess-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:8px}
+.guess-input{display:block;width:100%;resize:none;border:0;border-radius:14px;padding:6px 14px 4px;margin-bottom:12px;
+  font-family:Caveat,"Bradley Hand","Segoe Print",cursive;font-size:2rem;font-weight:700;line-height:40px;color:#1f3a93;
+  background:#fffdf3 repeating-linear-gradient(transparent 0 39px,#c9d6f2 39px 40px);background-position:0 6px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.12),0 6px 16px -8px rgba(0,0,0,.5)}
+.guess-input::placeholder{color:#9aa6c4}
+.guess-input:focus{outline:3px solid var(--accent2)}
+.guess-show{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent}
+.guess-show[open]{display:grid;place-items:center;animation:pop .3s ease}
+.guess-show::backdrop{background:rgba(5,3,12,.85)}
+.gs-paper{width:min(94vw,1100px);height:min(86dvh,760px);border-radius:18px;padding:28px 26px;display:flex;flex-direction:column;align-items:center;
+  background:#fffdf3 repeating-linear-gradient(transparent 0 47px,#c9d6f2 47px 48px);box-shadow:0 30px 80px rgba(0,0,0,.6);transform:rotate(-1.5deg);cursor:pointer}
+.gs-label{font-family:Outfit,sans-serif;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#d04a7a;font-size:.85rem}
+.gs-text{flex:1;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;overflow-wrap:anywhere;
+  font-family:Caveat,"Bradley Hand","Segoe Print",cursive;font-weight:700;line-height:1.05;color:#1f3a93}
+.gs-hint{font-family:Outfit,sans-serif;color:#8a8fa8;font-size:.8rem}
 
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:300;overflow:hidden}
 .confetti i{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall linear forwards}
@@ -796,6 +816,11 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
         <button data-go="bingo">Zu den Bingo-Karten</button>
       </div>
       <div id="myCardOn">
+        <div class="guess-wrap glass-lite">
+          <div class="guess-head"><span>✍️ Dein Tipp</span><button class="link small" id="btnMyGuessClear">Löschen</button></div>
+          <textarea id="myGuessText" class="guess-input" rows="2" maxlength="80" placeholder="z. B. Queen – 1975" autocomplete="off" spellcheck="false" enterkeyhint="done"></textarea>
+          <button class="big full" id="btnMyGuessShow">👀 Tipp zeigen</button>
+        </div>
         <div class="card-top" style="margin-top:14px"><span class="pill">Karte Nr. <b id="myCardNo"></b></span><span class="pill" id="myCardHits"></span></div>
         <div id="myCardWin" class="check-res won hidden">🎉 BINGO! Ruf es laut – Karte Nr. <span id="myCardWinNo"></span></div>
         <div id="myCardGrid" class="bgrid"></div>
@@ -815,6 +840,11 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
     <div class="logo"><img src="icon-192.png" alt=""><span>Musik-Bingo</span></div>
     <span class="pill">Karte Nr. <b id="cardNo"></b></span>
   </div>
+  <div class="glass guess-wrap">
+    <div class="guess-head"><span>✍️ Dein Tipp</span><button class="link small" id="btnGuessClear">Löschen</button></div>
+    <textarea id="guessText" class="guess-input" rows="2" maxlength="80" placeholder="z. B. Queen – 1975" autocomplete="off" spellcheck="false" enterkeyhint="done"></textarea>
+    <button class="big full" id="btnGuessShow">👀 Tipp zeigen</button>
+  </div>
   <div class="glass card-wrap">
     <div class="card-top"><span class="pill" id="cardHits"></span><button class="link small" id="btnCardClear">Markierungen löschen</button></div>
     <div id="cardGrid" class="bgrid"></div>
@@ -829,6 +859,15 @@ dialog::backdrop{background:rgba(5,3,12,.42)}
     <button class="ghost" id="btnWinClose">Weiter</button>
   </div>
 </div>
+
+<!-- Tipp im Vollbild zum Herzeigen -->
+<dialog id="guessShow" class="guess-show">
+  <div class="gs-paper">
+    <div class="gs-label">Mein Tipp</div>
+    <div class="gs-text" id="gsText"></div>
+    <div class="gs-hint">Tippen zum Schließen</div>
+  </div>
+</dialog>
 
 <dialog id="dlgAsk" class="alert">
   <form method="dialog">
@@ -1986,8 +2025,37 @@ function mountCard(b, el, onWin) {
   draw();
 }
 
+/* Tipp-Zettel: Text eintippen und bei der Auflösung im Vollbild den anderen zeigen */
+function mountGuess(text, show, clear) {
+  text.value = LS.get('guess', '');
+  text.oninput = () => LS.set('guess', text.value);
+  text.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); text.blur(); } };
+  clear.onclick = () => { text.value = ''; LS.set('guess', ''); text.focus(); };
+  show.onclick = () => {
+    const v = text.value.trim();
+    if (!v) { text.focus(); return toast('Schreib zuerst deinen Tipp'); }
+    text.blur();
+    const d = $('#guessShow'), el = $('#gsText');
+    // Der Text steht in einem Rahmen mit 90 % Breite – so bleibt Luft für die schräge Handschrift
+    el.innerHTML = `<span style="display:inline-block;max-width:90%">${esc(v)}</span>`;
+    const span = el.firstChild;
+    d.showModal();
+    // Schrift so groß wie möglich, ohne dass etwas abgeschnitten wird. Wörter nicht mittendrin trennen –
+    // nur bei sehr langen Wörtern als Notlösung.
+    requestAnimationFrame(() => {
+      span.style.overflowWrap = 'normal';
+      const tooBig = () => span.scrollWidth > span.clientWidth + 1 || span.offsetHeight > el.clientHeight * .95;
+      let s = 220; el.style.fontSize = s + 'px';
+      while (s > 28 && tooBig()) { s -= 4; el.style.fontSize = s + 'px'; }
+      if (tooBig()) span.style.overflowWrap = 'anywhere';
+    });
+  };
+}
+$('#guessShow').onclick = () => $('#guessShow').close();
+
 /* Karten-Ansicht für Mitspieler: läuft komplett auf deren Handy, ohne Spotify */
 function cardMode(param) {
+  mountGuess($('#guessText'), $('#btnGuessShow'), $('#btnGuessClear'));
   let b;
   try { b = parseBingo(param); if (!b.g || !(b.s >= 3 && b.s <= 5) || !b.k.length) throw 0; }
   catch { document.body.innerHTML = '<p style="padding:40px;text-align:center">Diese Bingo-Karte ist ungültig.</p>'; return; }
@@ -2007,6 +2075,7 @@ function renderMyCard() {
   $('#myCardOff').classList.toggle('hidden', !!b);
   $('#myCardOn').classList.toggle('hidden', !b);
   if (!b) return;
+  mountGuess($('#myGuessText'), $('#btnMyGuessShow'), $('#btnMyGuessClear'));
   mountCard(b, { grid: $('#myCardGrid'), no: $('#myCardNo'), hits: $('#myCardHits'), legend: $('#myCardLegend'), clear: $('#btnMyCardClear') }, (num, initial) => {
     $('#myCardWin').classList.toggle('hidden', num == null);
     if (num != null) { $('#myCardWinNo').textContent = num; if (!initial) { confetti(); beep(1046, .3); } }
