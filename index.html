@@ -23,8 +23,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+/* Farbthemen: --surf/--deep sind RGB-Werte für getönte Glasflächen, --blob1/2 die Farbflächen im Hintergrund */
+:root,[data-theme="graphit"]{--bg:#0c0c0f;--sheet:#141418;--surf:44,44,52;--deep:4,4,6;--blob1:#2c3442;--blob2:#1f3a32;--text:#f4f4f6;--muted:#a1a1ad}
+[data-theme="lila"]{--bg:#0d0a1a;--sheet:#15112a;--surf:40,33,76;--deep:5,3,12;--blob1:#4a22a0;--blob2:#8a1458;--text:#f5f2ff;--muted:#a49dc6}
+[data-theme="ozean"]{--bg:#05111a;--sheet:#0a1a26;--surf:24,46,64;--deep:2,6,10;--blob1:#0b4f75;--blob2:#0d6e66;--text:#eef6fb;--muted:#93b4c8}
+[data-theme="abend"]{--bg:#130a0b;--sheet:#1c0f11;--surf:62,34,38;--deep:8,3,4;--blob1:#7a2e1c;--blob2:#7d1f4a;--text:#fbf1f1;--muted:#cfa9ab}
+[data-theme="wald"]{--bg:#08110c;--sheet:#0d1a13;--surf:30,52,40;--deep:3,7,5;--blob1:#1d5a3a;--blob2:#4c5b1a;--text:#f0f7f2;--muted:#a3bfae}
 :root{
-  --bg:#0d0a1a;--sheet:#15112a;--glass:rgba(30,24,58,.62);--text:#f5f2ff;--muted:#a49dc6;
+  --glass:rgba(var(--surf),.62);
   --accent:#1ed760;--accent2:#ff4fa3;--warn:#ffb020;--danger:#ff5a6a;--line:rgba(255,255,255,.09);
   --cell:rgba(255,255,255,.055);--cat:#1ed760;--radius:24px;
   --sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom);
@@ -43,8 +49,8 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);ba
 input,textarea{-webkit-user-select:text;user-select:text}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
 .bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:float 22s ease-in-out infinite alternate}
-.bg i:nth-child(1){width:55vmax;height:55vmax;left:-15vmax;top:-20vmax;background:#4a22a0}
-.bg i:nth-child(2){width:45vmax;height:45vmax;right:-15vmax;top:5vmax;background:#8a1458;animation-delay:-8s}
+.bg i:nth-child(1){width:55vmax;height:55vmax;left:-15vmax;top:-20vmax;background:var(--blob1)}
+.bg i:nth-child(2){width:45vmax;height:45vmax;right:-15vmax;top:5vmax;background:var(--blob2);animation-delay:-8s}
 .bg i:nth-child(3){width:40vmax;height:40vmax;left:20vmax;bottom:-25vmax;background:var(--cat);opacity:.18;transition:background 1s;animation-delay:-14s}
 @keyframes float{to{transform:translate(6vmax,4vmax) scale(1.1)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:0s!important;animation-iteration-count:1!important}}
@@ -186,12 +192,12 @@ main{max-width:960px;margin:0 auto;padding:0 16px 40px}
 
 /* ---------- Sheets (Playlists / Einstellungen) im iOS-Stil ---------- */
 dialog{color:var(--text);padding:0;border:0}
-dialog::backdrop{background:rgba(5,3,12,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+dialog::backdrop{background:rgba(var(--deep),.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
 .sheet{background:var(--sheet);border:1px solid var(--line);border-radius:22px;width:min(560px,calc(100vw - 24px));
   height:min(780px,calc(100dvh - 48px));max-height:none;box-shadow:0 40px 80px -20px #000;overflow:hidden}
 .sheet[open]{display:flex;flex-direction:column;animation:pop .28s ease}
 .sheet-head{position:relative;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:14px 8px 10px;
-  border-bottom:1px solid var(--line);background:rgba(21,17,42,.92);flex:none}
+  border-bottom:1px solid var(--line);background:rgba(var(--surf),.92);flex:none}
 .grab{display:none;position:absolute;top:6px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:3px;background:rgba(255,255,255,.22)}
 .nav-back,.nav-done{background:none;color:var(--accent);padding:8px 10px;font-weight:500;font-size:1.02rem;border-radius:10px}
 .nav-back{justify-self:start;gap:0}
@@ -268,7 +274,7 @@ details.cell-d{position:relative}
 .notice p{margin:0 0 12px;color:var(--muted)}
 
 /* iOS-Hinweisfenster */
-.alert{background:rgba(38,32,68,.97);border-radius:16px;width:min(300px,calc(100vw - 48px));text-align:center;box-shadow:0 30px 60px -10px #000;overflow:hidden}
+.alert{background:rgba(var(--surf),.97);border-radius:16px;width:min(300px,calc(100vw - 48px));text-align:center;box-shadow:0 30px 60px -10px #000;overflow:hidden}
 .alert[open]{animation:alertIn .22s ease}
 @keyframes alertIn{from{opacity:0;transform:scale(1.12)}}
 .alert p{margin:0;padding:20px 18px 6px;white-space:pre-line;line-height:1.4;font-size:.95rem}
@@ -278,7 +284,7 @@ details.cell-d{position:relative}
 .alert-btns button:first-child{font-weight:500;border-right:1px solid var(--line)}
 .alert-btns button.danger{color:var(--danger)}
 
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:rgba(42,35,80,.96);border:1px solid var(--line);
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:rgba(var(--surf),.96);border:1px solid var(--line);
   padding:12px 18px;border-radius:16px;width:max-content;max-width:calc(100vw - 32px);z-index:99;box-shadow:0 14px 40px rgba(0,0,0,.6);
   opacity:0;visibility:hidden;transition:transform .35s cubic-bezier(.3,1.3,.5,1),opacity .25s,visibility .25s;line-height:1.4;text-align:center;display:flex;align-items:center;justify-content:center;gap:12px}
 #toast .mini{flex:none;padding:.5em .9em;border-radius:99px;font-size:.88rem}
@@ -347,7 +353,7 @@ body.card-mode>header,body.card-mode>main{display:none}
 .card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mycard-btn{width:100%;margin-top:16px;padding:.95em;border-radius:20px;font-size:1rem}
 #cardApp p{line-height:1.45}
-.win{position:fixed;inset:0;z-index:150;display:grid;place-items:center;background:rgba(5,3,12,.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;padding:20px}
+.win{position:fixed;inset:0;z-index:150;display:grid;place-items:center;background:rgba(var(--deep),.75);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-align:center;padding:20px}
 .win .big-word{font-size:clamp(3.5rem,18vw,7rem);font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;animation:land .6s cubic-bezier(.3,1.6,.5,1)}
 .win p{font-size:1.15rem;margin:6px 0 20px}
 
@@ -363,7 +369,7 @@ body.card-mode>header,body.card-mode>main{display:none}
 .guess-input:focus{outline:3px solid var(--accent2)}
 .guess-show{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent}
 .guess-show[open]{display:grid;place-items:center;animation:pop .3s ease}
-.guess-show::backdrop{background:rgba(5,3,12,.85)}
+.guess-show::backdrop{background:rgba(var(--deep),.85)}
 .gs-paper{width:min(94vw,1100px);height:min(86dvh,760px);border-radius:18px;padding:28px 26px;display:flex;flex-direction:column;align-items:center;
   background:#fffdf3 repeating-linear-gradient(transparent 0 47px,#c9d6f2 47px 48px);box-shadow:0 30px 80px rgba(0,0,0,.6);transform:rotate(-1.5deg);cursor:pointer}
 .gs-label{font-family:Outfit,sans-serif;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#d04a7a;font-size:.85rem}
@@ -407,14 +413,14 @@ button.pink.big{box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 30px -12px
 .rv-answer{background-image:var(--g-sheen),linear-gradient(135deg,color-mix(in srgb,var(--cat) 25%,transparent),rgba(255,255,255,.03))}
 .rv-song,.award{background:rgba(255,255,255,.06) var(--g-sheen);border-color:var(--g-brd)}
 /* Menüs als Glasfläche */
-dialog::backdrop{background:rgba(5,3,12,.42)}
-.sheet{background:rgba(26,20,50,.66);backdrop-filter:blur(36px) saturate(180%);-webkit-backdrop-filter:blur(36px) saturate(180%);
+dialog::backdrop{background:rgba(var(--deep),.42)}
+.sheet{background:rgba(var(--surf),.66);backdrop-filter:blur(36px) saturate(180%);-webkit-backdrop-filter:blur(36px) saturate(180%);
   border-color:var(--g-brd);box-shadow:var(--g-hi),0 40px 80px -20px #000}
 .sheet-head{background:transparent;border-bottom-color:rgba(255,255,255,.08)}
 .group{background:rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
 .seg{background:rgba(255,255,255,.075);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
 .seg button.on{background-color:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 3px 10px rgba(0,0,0,.3)}
-.alert,#toast{background:rgba(40,33,76,.62);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+.alert,#toast{background:rgba(var(--surf),.62);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
   border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 50px -10px rgba(0,0,0,.7)}
 .alert{border-radius:22px}
 .bcell{box-shadow:inset 0 1px 0 rgba(255,255,255,.14);background-image:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,0) 50%)}
@@ -440,8 +446,8 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
 /* ---------- „•••“-Menü als iOS-Aktionsblatt ---------- */
 .action-sheet{width:min(440px,calc(100vw - 20px));max-width:none;margin:auto auto calc(max(var(--sab), 10px) + 6px);padding:0;background:transparent;border:0;overflow:visible}
 .action-sheet[open]{animation:sheetUp .32s cubic-bezier(.2,.9,.3,1)}
-.action-sheet::backdrop{background:rgba(5,3,12,.45)}
-.as-group,.as-cancel{background:rgba(40,33,76,.72);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
+.action-sheet::backdrop{background:rgba(var(--deep),.45)}
+.as-group,.as-cancel{background:rgba(var(--surf),.72);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);
   border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 50px -10px rgba(0,0,0,.7);border-radius:20px;overflow:hidden}
 .as-item{display:flex;align-items:center;gap:14px;width:100%;padding:16px 20px;background:none;border-radius:0;color:var(--text);font-weight:500;font-size:1.05rem;justify-content:flex-start;transform:none!important}
 .as-item+.as-item{border-top:1px solid rgba(255,255,255,.08)}
@@ -450,6 +456,30 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
 .as-item:active{background:rgba(255,255,255,.08)}
 .as-item:disabled{opacity:.4}
 .as-cancel{display:block;width:100%;margin-top:8px;padding:16px;color:var(--text);font-weight:700;font-size:1.05rem;transform:none!important}
+
+/* ---------- Platte antippen = Play/Pause ---------- */
+.disc-wrap.tappable{cursor:pointer}
+.disc-state{position:absolute;left:50%;top:50%;width:68px;height:68px;margin:-34px 0 0 -34px;border-radius:50%;display:grid;place-items:center;z-index:2;
+  background:rgba(var(--surf),.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 10px 30px -8px rgba(0,0,0,.6);
+  color:#fff;opacity:0;transform:scale(.8);transition:opacity .25s,transform .25s;pointer-events:none}
+.disc-state .ic{width:30px;height:30px}
+.disc-wrap.paused .disc-state{opacity:1;transform:scale(1)}
+.disc-wrap.tapped .disc-state{animation:tapFlash .7s ease}
+@keyframes tapFlash{0%{opacity:1;transform:scale(1.3)}60%{opacity:1;transform:scale(1)}}
+.disc-wrap.paused:not(.counting):not(.flipped) .disc-num{opacity:0}
+.disc-wrap:active .flipper{transform:scale(.97)}
+.disc-wrap.flipped:active .flipper{transform:rotateY(180deg) scale(.97)}
+.action-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:-8px 0 18px}
+.action-row:empty{display:none}
+.pill-btn{background:rgba(255,255,255,.08) var(--g-sheen);border:1px solid var(--g-brd);box-shadow:var(--g-hi);color:var(--text);
+  font-weight:600;font-size:.88rem;padding:.6em 1.05em;border-radius:99px;gap:.45em}
+.pill-btn .ic{width:1.1em;height:1.1em}
+/* Themen-Auswahl */
+.theme-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.theme-pick{flex-direction:column;gap:6px;background:none;color:var(--muted);font-weight:600;font-size:.78rem;padding:6px 2px;border-radius:14px}
+.theme-pick i{width:46px;height:46px;border-radius:50%;display:block;border:2px solid transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.theme-pick.on{color:var(--text)}
+.theme-pick.on i{border-color:var(--text);box-shadow:0 0 0 3px rgba(255,255,255,.12)}
 
 /* ---------- Handy ---------- */
 @media (max-width:640px){
@@ -466,7 +496,7 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
   .disc-wrap{margin:18px auto 6px;width:min(250px,64vw)}
   /* Bedienleiste unten als schwebende Glas-Kapsel */
   .controls{position:fixed;left:10px;right:10px;bottom:calc(max(var(--sab), 6px) + 6px);z-index:20;padding:8px;gap:6px;border-radius:32px;
-    background:rgba(34,27,64,.5);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);
+    background:rgba(var(--surf),.5);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);
     border:1px solid var(--g-brd);box-shadow:var(--g-hi),0 20px 44px -14px rgba(0,0,0,.75);flex-wrap:wrap}
   .controls{flex-wrap:nowrap;align-items:stretch}
   .controls .big{flex:1 1 auto;min-width:0;padding:.9em .8em;border-radius:26px;font-size:1.02rem}
@@ -556,7 +586,10 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
         </div>
         <div class="face back"><div id="discCover" class="disc-cover"></div></div>
       </div>
+      <!-- Antippen pausiert/startet die Musik; das Symbol zeigt den Zustand -->
+      <div id="discState" class="disc-state"></div>
     </div>
+    <div id="actionRow" class="action-row"></div>
     <div id="reveal" class="reveal hidden"></div>
     <div id="controls" class="controls"></div>
     <div id="volBox" class="volume">
@@ -642,6 +675,9 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
           <svg class="ic chev"><use href="#i-chev"/></svg>
         </button>
       </div>
+
+      <div class="group-h">Design</div>
+      <div class="theme-row" id="themeRow"></div>
 
       <div class="group-h">Spiel</div>
       <div class="group">
@@ -896,12 +932,6 @@ button.big,.dlg-body h2{font-family:Outfit,-apple-system,system-ui,sans-serif;le
   </div>
 </div>
 
-<!-- „•••“-Menü: alle Nebenaktionen der Runde -->
-<dialog id="moreMenu" class="action-sheet">
-  <div class="as-group" id="moreItems"></div>
-  <button class="as-cancel" data-close>Abbrechen</button>
-</dialog>
-
 <!-- Tipp im Vollbild zum Herzeigen -->
 <dialog id="guessShow" class="guess-show">
   <div class="gs-paper">
@@ -983,7 +1013,7 @@ const state = {
   played: LS.get('played', []),
   cats: LS.get('cats', null) || structuredClone(DEFAULT_CATS),
   settings: Object.assign({ seconds: 30, start: 'begin', beep: true, autoReveal: true, pauseOnReveal: false, mode: 'auto', volume: 80,
-    limit: 0, hints: true, mb: true }, LS.get('settings', {})),
+    limit: 0, hints: true, mb: true, theme: 'graphit' }, LS.get('settings', {})),
   players: LS.get('players', []),
   bingo: LS.get('bingo', null)?.k ? LS.get('bingo', null) : null,   // { g, s, k: [{ i, c, e, n }] } – aktuelle Bingo-Runde
   mb: LS.get('mb', {}),             // Originaljahre laut MusicBrainz (0 = nichts Besseres gefunden)
@@ -2151,45 +2181,49 @@ function render() {
   if (ph === 'revealed') renderReveal();
 
   renderHints();
-  // Pro Moment ein Hauptknopf; alles Weitere liegt im „•••“-Menü
-  const more = `<button class="ghost" data-act="more" aria-label="Mehr">${ic('dots')}<span>Mehr</span></button>`;
+  // Unten: ein Hauptknopf (plus „Auflösen“ ohne Countdown). Musik-Steuerung = auf die Platte tippen.
   const c = {
     idle: !state.tracks.length
       ? `<button class="big" data-act="lib">${ic('plus')} Playlist hinzufügen</button>`
       : state.history.length
-        ? `${more}<button class="big" data-act="next">${ic('play')} Weiterspielen</button>`
+        ? `<button class="ghost" data-act="newgame">${ic('restart')}<span>Neu</span></button><button class="big" data-act="next">${ic('play')} Weiterspielen</button>`
         : `<button class="big" data-act="start">${ic('play')} Spiel starten</button>`,
-    playing: `${more}<button class="ghost" data-act="reveal">${ic('eye')}<span>Auflösen</span></button>
+    playing: `<button class="ghost" data-act="reveal">${ic('eye')}<span>Auflösen</span></button>
               <button class="big" data-act="countdown">${ic('timer')} Countdown · ${state.settings.seconds} s</button>`,
-    countdown: `${more}<button class="big pink" data-act="reveal">${ic('eye')} Jetzt auflösen</button>`,
-    revealed: `${more}<button class="big" data-act="next">${ic('skip')} Nächster Song</button>`,
+    countdown: `<button class="big pink" data-act="reveal">${ic('eye')} Jetzt auflösen</button>`,
+    revealed: `<button class="big" data-act="next">${ic('skip')} Nächster Song</button>`,
   }[ph];
   $('#controls').innerHTML = c;
+  // Unter der Platte: kleine, beschriftete Zusatzknöpfe passend zur Phase
+  const acts = [];
+  if (round && ph !== 'revealed') {
+    if (state.settings.hints) {
+      const left = hintsFor(round.cat, round.track).length - (round.hints || 0);
+      acts.push(`<button class="pill-btn" data-act="hint" ${left > 0 ? '' : 'disabled'}>${ic('bulb')}Tipp${left > 0 ? ` · ${left}` : ''}</button>`);
+    }
+    acts.push(`<button class="pill-btn" data-act="next">${ic('skip')}Überspringen</button>`);
+  }
+  if (ph === 'revealed') acts.push(`<button class="pill-btn" data-act="fixYear">${ic('pen')}Jahr korrigieren</button>`);
+  $('#actionRow').innerHTML = acts.join('');
   renderPlayState();
 }
 function renderPlayState() {
-  $('#discWrap').classList.toggle('playing', Player.playing && !!round);
+  const dw = $('#discWrap');
+  dw.classList.toggle('playing', Player.playing && !!round);
+  // Symbol auf der Platte: Play wenn pausiert, „nochmal“ wenn der Ausschnitt vorbei ist
+  const replay = round?.snippetDone && round.phase !== 'revealed';
+  dw.classList.toggle('paused', !!round && (!Player.playing || replay));
+  dw.classList.toggle('tappable', !!round || state.tracks.length > 0);
+  $('#discState').innerHTML = round ? ic(replay ? 'restart' : Player.playing ? 'pause' : 'play') : '';
 }
-// Inhalt des „•••“-Menüs je nach Spielphase
-function openMore() {
-  const ph = round?.phase || 'idle';
-  const items = [];
-  const item = (act, icon, label, extra = '') => items.push(`<button class="as-item" data-act="${act}" ${extra}>${ic(icon)}<span>${label}</span></button>`);
-  if (round) {
-    if (round.snippetDone && ph !== 'revealed') item('toggle', 'restart', 'Ausschnitt nochmal spielen');
-    else item('toggle', Player.playing ? 'pause' : 'play', Player.playing ? 'Musik pausieren' : 'Musik weiterspielen');
-  }
-  if (round && ph !== 'revealed' && state.settings.hints) {
-    const left = hintsFor(round.cat, round.track).length - (round.hints || 0);
-    item('hint', 'bulb', left > 0 ? `Tipp anzeigen (${left} übrig)` : 'Keine Tipps mehr', left > 0 ? '' : 'disabled');
-  }
-  if (round && ph !== 'revealed') item('next', 'skip', 'Song überspringen');
-  if (ph === 'revealed') item('fixYear', 'pen', 'Jahr korrigieren');
-  if (state.bingo) item('mycard', 'grid', 'Meine Bingo-Karte');
-  item('game', 'trophy', 'Punkte & Bingo');
-  if (!round && state.history.length) item('newgame', 'restart', 'Neues Spiel starten', 'data-danger');
-  $('#moreItems').innerHTML = items.join('');
-  $('#moreMenu').showModal();
+// Platte antippen: Musik pausieren/fortsetzen bzw. Ausschnitt nochmal spielen
+function discTap() {
+  if (!round) { if (state.tracks.length) { resetGame(); nextRound(); } return; }
+  if (round.snippetDone && round.phase !== 'revealed') playSnippet();
+  else Player.toggle();
+  const dw = $('#discWrap');
+  dw.classList.remove('tapped'); void dw.offsetWidth; dw.classList.add('tapped');
+  try { navigator.vibrate?.(10); } catch {}
 }
 function renderReveal() {
   const t = round.track, y = yearOf(t), cat = round.cat;
@@ -2301,6 +2335,7 @@ function renderSettings() {
   $('#setStart').value = s.start; $('#setMode').value = s.mode;
   $('#setBeep').checked = s.beep; $('#setAuto').checked = s.autoReveal; $('#setPause').checked = s.pauseOnReveal;
   $('#setLimit').value = String(s.limit || 0); $('#setHints').checked = s.hints; $('#setMb').checked = s.mb;
+  renderThemes();
   const showDev = s.mode === 'connect' || Player.mode === 'connect';
   $('#devRow').classList.toggle('hidden', !showDev);
   if (showDev) renderDevices();
@@ -2357,10 +2392,8 @@ const saveCats = () => { LS.set('cats', state.cats); renderCats(); renderSetting
 document.addEventListener('click', async e => {
   const t = e.target;
   const a = t.closest('[data-act]')?.dataset.act;
-  // Auswahl im „•••“-Menü schließt das Menü zuerst
-  if (a && t.closest('#moreMenu')) $('#moreMenu').close();
-  if (a === 'more') openMore();
-  else if (a === 'game') openSheet('sheetGame');
+  if (t.closest('#discWrap')) discTap();
+  if (a === 'game') openSheet('sheetGame');
   else if (a === 'mycard') openSheet('sheetGame', 'mycard');
   else if (a === 'newgame') askNewGame();
   else if (a === 'start') { resetGame(); nextRound(); }
@@ -2503,6 +2536,21 @@ $('#btnBingoOff').onclick = async () => {
 $('#setLimit').onchange = e => { state.settings.limit = +e.target.value; saveSettings(); };
 $('#setHints').onchange = e => { state.settings.hints = e.target.checked; saveSettings(); };
 $('#setMb').onchange = e => { state.settings.mb = e.target.checked; saveSettings(); renderHist(); };
+const THEMES = [['graphit', 'Graphit', '#3a4252', '#1f3a32'], ['ozean', 'Ozean', '#0b4f75', '#0d6e66'], ['wald', 'Wald', '#1d5a3a', '#4c5b1a'], ['abend', 'Abend', '#7a2e1c', '#7d1f4a'], ['lila', 'Lila', '#4a22a0', '#8a1458']];
+function applyTheme() {
+  const th = THEMES.find(x => x[0] === state.settings.theme) ? state.settings.theme : 'graphit';
+  document.documentElement.dataset.theme = th;
+  document.querySelector('meta[name=theme-color]')?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+}
+function renderThemes() {
+  $('#themeRow').innerHTML = THEMES.map(([id, name, a, b]) => `<button class="theme-pick ${state.settings.theme === id ? 'on' : ''}" data-theme-pick="${id}"><i style="background:linear-gradient(135deg,${a},${b})"></i>${name}</button>`).join('');
+}
+$('#themeRow').onclick = e => {
+  const b = e.target.closest('[data-theme-pick]'); if (!b) return;
+  state.settings.theme = b.dataset.themePick; LS.set('settings', state.settings);
+  applyTheme(); renderThemes();
+};
+applyTheme();
 $('#btnClearLib').onclick = async () => {
   if (!await ask('Alle Songs und Playlists aus dem Spiel entfernen?', { ok: 'Entfernen', danger: true })) return;
   state.tracks = []; state.sources = []; state.played = []; saveLib();
