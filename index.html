@@ -48,11 +48,11 @@ body.locked{overflow:hidden}
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:var(--sat);background:var(--bg);z-index:40;pointer-events:none}
 input,textarea{-webkit-user-select:text;user-select:text}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-.bg i{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:float 22s ease-in-out infinite alternate}
-.bg i:nth-child(1){width:55vmax;height:55vmax;left:-15vmax;top:-20vmax;background:var(--blob1)}
-.bg i:nth-child(2){width:45vmax;height:45vmax;right:-15vmax;top:5vmax;background:var(--blob2);animation-delay:-8s}
-.bg i:nth-child(3){width:40vmax;height:40vmax;left:20vmax;bottom:-25vmax;background:var(--cat);opacity:.18;transition:background 1s;animation-delay:-14s}
-@keyframes float{to{transform:translate(6vmax,4vmax) scale(1.1)}}
+/* Farbflächen als Verläufe statt mit Weichzeichner und ohne Dauer-Animation – spart auf dem iPhone sehr viel Rechenleistung */
+.bg i{position:absolute;border-radius:50%;opacity:.6}
+.bg i:nth-child(1){width:85vmax;height:85vmax;left:-32vmax;top:-38vmax;background:radial-gradient(closest-side,var(--blob1),transparent)}
+.bg i:nth-child(2){width:70vmax;height:70vmax;right:-28vmax;top:-8vmax;background:radial-gradient(closest-side,var(--blob2),transparent)}
+.bg i:nth-child(3){width:65vmax;height:65vmax;left:8vmax;bottom:-38vmax;background:radial-gradient(closest-side,var(--cat),transparent);opacity:.22}
 @media (prefers-reduced-motion:reduce){*{animation-duration:0s!important;animation-iteration-count:1!important}}
 
 /* ---------- Grundelemente ---------- */
@@ -348,6 +348,15 @@ body.card-mode>header,body.card-mode>main{display:none}
 #cardApp{max-width:560px;margin:0 auto;padding:calc(var(--sat) + 14px) 14px calc(30px + var(--sab))}
 #cardApp .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 #cardApp .card-wrap{padding:16px}
+/* Mitspieler-Ansicht: keine Echtzeit-Unschärfe – deutlich leichter für ältere iPhones */
+body.card-mode .glass::before{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(var(--surf),.55)}
+body.card-mode .win{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(var(--deep),.9)}
+.card-more{margin-top:14px;padding:4px 16px 16px}
+.card-more summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-weight:700;cursor:pointer}
+.card-more summary::-webkit-details-marker{display:none}
+.card-more summary .chev{transform:rotate(90deg);transition:transform .2s;color:var(--muted)}
+.card-more[open] summary .chev{transform:rotate(-90deg)}
+.card-more p{margin:0 0 10px;line-height:1.45}
 .card-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .mycard-btn{width:100%;margin-top:16px;padding:.95em;border-radius:20px;font-size:1rem}
 #cardApp p{line-height:1.45}
@@ -900,11 +909,20 @@ button.big{font-family:Outfit,-apple-system,system-ui,sans-serif;letter-spacing:
     <button class="big full" id="btnGuessShow"><svg class="ic"><use href="#i-eye"/></svg> Tipp zeigen</button>
   </div>
   <div class="glass card-wrap">
-    <div class="card-top"><span class="pill" id="cardHits"></span><button class="link small" id="btnCardClear">Markierungen löschen</button></div>
+    <div class="card-top"><span class="pill" id="cardHits"></span></div>
     <div id="cardGrid" class="bgrid"></div>
-    <p class="small muted" style="margin:6px 2px 10px">Hast du die Frage einer Runde <b>richtig</b> beantwortet? Dann markiere <b>ein</b> Feld dieser Kategorie. Volle Reihe, Spalte oder Diagonale = <b>BINGO!</b> Ruf es laut und nenn deine Kartennummer.</p>
-    <div class="chip-scroll" id="cardLegend"></div>
   </div>
+  <!-- Info & Einstellungen für Mitspieler: unten, mit Pfeil aufklappbar -->
+  <details class="glass card-more">
+    <summary><span>Info & Einstellungen</span><svg class="ic chev"><use href="#i-chev"/></svg></summary>
+    <p class="small muted">Hast du die Frage einer Runde <b>richtig</b> beantwortet? Dann markiere <b>ein</b> Feld dieser Kategorie. Volle Reihe, Spalte oder Diagonale = <b>BINGO!</b> Ruf es laut und nenn deine Kartennummer.</p>
+    <div class="chip-scroll" id="cardLegend"></div>
+    <div class="group-h" style="margin-left:4px">Design</div>
+    <div class="theme-row" id="cardThemeRow"></div>
+    <div class="group" style="margin-top:16px">
+      <button class="cell tap danger" id="btnCardClear"><span class="grow">Markierungen löschen</span></button>
+    </div>
+  </details>
 </div>
 <div id="bingoWin" class="win hidden">
   <div>
@@ -998,7 +1016,8 @@ const state = {
     limit: 0, hints: true, mb: true, theme: 'graphit' }, LS.get('settings', {})),
   players: LS.get('players', []),
   bingo: LS.get('bingo', null)?.k ? LS.get('bingo', null) : null,   // { g, s, k: [{ i, c, e, n }] } – aktuelle Bingo-Runde
-  mb: LS.get('mb', {}),             // Originaljahre laut MusicBrainz (0 = nichts Besseres gefunden)
+  // Originaljahre laut MusicBrainz (0 = nichts Besseres gefunden). v2: alte Einträge der ersten, unzuverlässigen Version verwerfen
+  mb: LS.get('mbv', 0) === 2 ? LS.get('mb', {}) : (LS.set('mbv', 2), LS.set('mb', {}), {}),
   yearFix: LS.get('yearFix', {}),
   history: LS.get('history', []),
 };
@@ -1011,6 +1030,7 @@ if (state.cats.some(c => !c.builtin && !c.color)) {
 const kStyle = k => { const base = CAT_STYLE[k.a] || CAT_STYLE.none; return [k.e || base[0], k.c ? '#' + k.c : base[1]]; };
 if (state.bingo) state.bingo.k = state.bingo.k.map(k => { const [e, c] = kStyle(k); return { i: k.i, c: c.slice(1), e, n: k.n }; });
 let round = null;      // { n, track, cat, phase: 'playing'|'countdown'|'revealed', timeUp }
+let upNext = [];       // IDs der nächsten, schon ausgewählten Songs
 let spinning = false;
 
 // Reihenfolge: eigene Korrektur > Originaljahr (MusicBrainz) > Spotify-Albumjahr
@@ -1036,11 +1056,16 @@ function toast(msg, ms = 3500, action = null) {
 
 /* ---------------- Bildschirm an lassen & Spotify aufwecken ---------------- */
 let wakeLock = null;
+let cardActive = false;   // Mitspieler-Ansicht: Bildschirm ebenfalls anlassen
+let wakePending = false;
 async function keepScreenOn() {
+  if (wakePending) return;
+  wakePending = true;
   try { if ('wakeLock' in navigator && !wakeLock && document.visibilityState === 'visible') {
     wakeLock = await navigator.wakeLock.request('screen');
     wakeLock.addEventListener('release', () => { wakeLock = null; });
   } } catch {}
+  wakePending = false;
 }
 const wakeError = msg => Object.assign(new Error(msg), { wake: true });
 let wakeRetry = null;
@@ -1054,7 +1079,7 @@ function offerSpotifyWake(msg) {
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
-  if (round) keepScreenOn();
+  if (round || cardActive) keepScreenOn();
   if (wakeRetry && wakeRetry === round && round.phase !== 'revealed') {
     wakeRetry = null;
     Player.connectDev = null;
@@ -1650,11 +1675,18 @@ async function nextRound() {
   let pool = state.tracks.filter(t => !state.played.includes(t.id));
   let reshuffled = false;
   if (!pool.length) { reshuffled = true; state.played = []; pool = state.tracks.slice(); }
-  const track = pool[Math.floor(Math.random() * pool.length)];
+  // Vorab ausgewählten Song nehmen (dessen Jahr ist dann meist schon nachgeschlagen), sonst zufällig
+  let track = null;
+  while (upNext.length && !track) { const id = upNext.shift(); track = pool.find(t => t.id === id) || null; }
+  track ??= pool[Math.floor(Math.random() * pool.length)];
   const cat = cats[Math.floor(Math.random() * cats.length)];
   state.played.push(track.id); LS.set('played', state.played);
   round = { n: state.history.length + 1, track, cat, phase: 'playing', hints: 0, pos: Player.startMs(track) };
-  mbLookup(track);
+  mbLookup(track, true);
+  // Die nächsten zwei Songs schon festlegen und ihr Originaljahr im Hintergrund nachschlagen
+  const rest = state.tracks.filter(t => !state.played.includes(t.id) && !upNext.includes(t.id));
+  while (upNext.length < 2 && rest.length) upNext.push(rest.splice(Math.floor(Math.random() * rest.length), 1)[0].id);
+  upNext.forEach(id => mbLookup(state.tracks.find(t => t.id === id)));
   spinCategory(cat);
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1797,44 +1829,60 @@ function baseTitle(s) {
     .trim();
 }
 const normStr = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}]/gu, '');
-let mbBusy = Promise.resolve();
-function mbLookup(t) {
-  if (!state.settings.mb || t.id in state.mb) return;
-  // MusicBrainz erlaubt ca. 1 Anfrage pro Sekunde → Anfragen nacheinander
-  mbBusy = mbBusy.then(async () => {
-    if (t.id in state.mb) return;
-    const title = baseTitle(t.title), artist = (t.artists.split(',')[0] || '').trim();
-    if (!normStr(title) || !normStr(artist)) { state.mb[t.id] = 0; return; }
+// Warteschlange: MusicBrainz erlaubt nur ca. 1 Anfrage pro Sekunde und antwortet sonst mit 503 („überlastet“).
+// Der aktuelle Song kommt immer nach vorne, die nächsten Songs werden im Hintergrund vorab nachgeschlagen.
+const mbQueue = [];
+let mbRunning = false;
+function mbLookup(t, urgent = false) {
+  if (!state.settings.mb || !t || t.id in state.mb) return;
+  const i = mbQueue.indexOf(t);
+  if (i >= 0) { if (urgent && i > 0) { mbQueue.splice(i, 1); mbQueue.unshift(t); } }
+  else if (urgent) mbQueue.unshift(t); else mbQueue.push(t);
+  runMbQueue();
+}
+async function runMbQueue() {
+  if (mbRunning) return;
+  mbRunning = true;
+  while (mbQueue.length) {
+    const t = mbQueue.shift();
+    if (!(t.id in state.mb)) await mbFetch(t);
+    await sleep(1200);
+  }
+  mbRunning = false;
+}
+async function mbFetch(t) {
+  const title = baseTitle(t.title), artist = (t.artists.split(',')[0] || '').trim();
+  if (!normStr(title) || !normStr(artist)) { state.mb[t.id] = 0; return; }
+  // Nur Aufnahmen suchen, die vor dem Spotify-Jahr erschienen sind – bekannte Songs haben sonst Hunderte Treffer
+  let q = `recording:"${title.replace(/"/g, '')}" AND artist:"${artist.replace(/"/g, '')}"`;
+  if (t.year) q += ` AND firstreleasedate:[1900 TO ${t.year - 1}]`;
+  const url = 'https://musicbrainz.org/ws/2/recording?fmt=json&limit=100&query=' + encodeURIComponent(q);
+  let j = null;
+  for (let attempt = 0; attempt < 4 && !j; attempt++) {
     try {
-      // Nur Aufnahmen suchen, die vor dem Spotify-Jahr erschienen sind – bekannte Songs haben sonst Hunderte Treffer
-      let q = `recording:"${title.replace(/"/g, '')}" AND artist:"${artist.replace(/"/g, '')}"`;
-      if (t.year) q += ` AND firstreleasedate:[1900 TO ${t.year - 1}]`;
-      const url = 'https://musicbrainz.org/ws/2/recording?fmt=json&limit=100&query=' + encodeURIComponent(q);
-      let r = await fetch(url);
-      if (r.status === 503) { await sleep(2500); r = await fetch(url); }   // kurz überlastet / Ratenlimit
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json();
-      let best = null;
-      for (const rec of j.recordings || []) {
-        if ((rec.score ?? 0) < 90 || normStr(rec.title) !== normStr(title)) continue;
-        const credit = normStr((rec['artist-credit'] || []).map(a => a.name || a.artist?.name).join(''));
-        if (!credit.includes(normStr(artist)) && !normStr(artist).includes(credit)) continue;
-        const y = parseInt(rec['first-release-date']);
-        if (y >= 1900 && (!best || y < best)) best = y;
-      }
-      // Nur übernehmen, wenn es früher ist als das Spotify-Jahr (Best-of/Remaster sind immer später)
-      state.mb[t.id] = best && (!t.year || best < t.year) ? best : 0;
-      LS.set('mb', state.mb);
-      if (state.mb[t.id] && round?.track === t) {
-        if (round.phase === 'revealed') {
-          const h = state.history.find(x => x.id === t.id && x.n === round.n);
-          if (h && state.yearFix[t.id] == null) { h.year = yearOf(t); LS.set('history', state.history); renderHist(); }
-          renderReveal();
-        }
-      }
-    } catch { /* offline o. ä. – beim nächsten Mal erneut versuchen */ }
-    await sleep(1100);
-  });
+      const r = await fetch(url);
+      if (r.ok) j = await r.json();
+      else if (r.status !== 503 && r.status !== 429) return;   // anderer Fehler: später erneut versuchen
+    } catch { /* offline o. ä. */ }
+    if (!j) await sleep(2000 * 2 ** attempt);                 // 2 s, 4 s, 8 s …
+  }
+  if (!j) return;   // nichts speichern → beim nächsten Mal neuer Versuch
+  let best = null;
+  for (const rec of j.recordings || []) {
+    if ((rec.score ?? 0) < 90 || normStr(rec.title) !== normStr(title)) continue;
+    const credit = normStr((rec['artist-credit'] || []).map(a => a.name || a.artist?.name).join(''));
+    if (!credit.includes(normStr(artist)) && !normStr(artist).includes(credit)) continue;
+    const y = parseInt(rec['first-release-date']);
+    if (y >= 1900 && (!best || y < best)) best = y;
+  }
+  // Nur übernehmen, wenn es früher ist als das Spotify-Jahr (Best-of/Remaster sind immer später)
+  state.mb[t.id] = best && (!t.year || best < t.year) ? best : 0;
+  LS.set('mb', state.mb);
+  if (state.mb[t.id] && round?.track === t && round.phase === 'revealed') {
+    const h = state.history.find(x => x.id === t.id && x.n === round.n);
+    if (h && state.yearFix[t.id] == null) { h.year = yearOf(t); LS.set('history', state.history); renderHist(); }
+    renderReveal();
+  }
 }
 
 /* ---------------- Tipps ---------------- */
@@ -2052,9 +2100,10 @@ function checkCard() {
   if (win) { confetti(); beep(1046, .3); }
 }
 function confetti() {
+  if (document.querySelector('.confetti')) return;   // nie mehrere Konfetti gleichzeitig – das bremst iPhones aus
   const c = document.createElement('div'); c.className = 'confetti';
   const cols = ['#1ed760', '#ff4fa3', '#ffb020', '#8b6cff', '#22d3ee'];
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < 60; i++) {
     const s = document.createElement('i');
     s.style.left = Math.random() * 100 + 'vw'; s.style.background = cols[i % cols.length];
     s.style.animationDelay = Math.random() * .6 + 's'; s.style.animationDuration = 2 + Math.random() * 1.6 + 's';
@@ -2073,7 +2122,8 @@ function mountCard(b, el, onWin) {
   LS.set(key, st);
   const fields = cardFields(b, st.num);
   const lines = bingoLines(b.s);
-  let won = false, first = true;
+  let first = true;
+  const celebrated = new Set();   // Reihen, für die es schon „Bingo“ gab
   el.no.textContent = st.num;
   el.legend.innerHTML = b.k.map(k => { const [icon, color] = kStyle(k); return `<span class="cat-chip" style="--c:${color}">${icon} ${esc(k.n)}</span>`; }).join('');
   const draw = () => {
@@ -2084,8 +2134,11 @@ function mountCard(b, el, onWin) {
     const inLine = new Set(winning.flat());
     el.grid.innerHTML = fields.map((f, i) => bcell(b, f, `${on.has(i) ? 'on' : ''} ${inLine.has(i) ? 'line' : ''}`, `data-i="${i}"`)).join('');
     el.hits.textContent = `${on.size} markiert`;
-    if (winning.length && !won) { won = true; onWin(st.num, first); }
-    if (!winning.length) { won = false; onWin(null); }
+    // Nur bei einer NEUEN vollen Reihe feiern – An-/Abtippen derselben Reihe löst kein neues Konfetti aus
+    const fresh = winning.map(l => l.join(',')).filter(k => !celebrated.has(k));
+    fresh.forEach(k => celebrated.add(k));
+    if (fresh.length) onWin(st.num, first);
+    if (!winning.length) onWin(null);
     first = false;
   };
   el.grid.onclick = e => {
@@ -2097,7 +2150,7 @@ function mountCard(b, el, onWin) {
   };
   el.clear.onclick = async () => {
     if (!await ask('Alle Markierungen löschen?', { ok: 'Löschen', danger: true })) return;
-    st.marks = []; LS.set(key, st); draw();
+    st.marks = []; celebrated.clear(); LS.set(key, st); draw();
   };
   draw();
 }
@@ -2133,6 +2186,10 @@ $('#guessShow').onclick = () => $('#guessShow').close();
 /* Karten-Ansicht für Mitspieler: läuft komplett auf deren Handy, ohne Spotify */
 function cardMode(param) {
   mountGuess($('#guessText'), $('#btnGuessShow'), $('#btnGuessClear'));
+  renderThemes();
+  // Bildschirm anlassen (iOS verlangt dafür ein Antippen) – nach dem Entsperren gab es sonst Hänger
+  cardActive = true;
+  document.addEventListener('pointerdown', keepScreenOn, { passive: true });
   let b;
   try { b = parseBingo(param); if (!b.g || !(b.s >= 3 && b.s <= 5) || !b.k.length) throw 0; }
   catch { document.body.innerHTML = '<p style="padding:40px;text-align:center">Diese Bingo-Karte ist ungültig.</p>'; return; }
@@ -2462,7 +2519,7 @@ document.addEventListener('change', e => {
   if (pts) { state.cats[+pts.dataset.catPts].pts = +pts.value; LS.set('cats', state.cats); }
 });
 document.addEventListener('keydown', e => {
-  if (document.querySelector('dialog[open]') || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+  if (cardActive || document.querySelector('dialog[open]') || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
   if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
     e.preventDefault(); setVolume(state.settings.volume + (e.code === 'ArrowUp' ? 5 : -5)); return;
   }
@@ -2550,10 +2607,12 @@ function applyTheme() {
   document.documentElement.dataset.theme = th;
   document.querySelector('meta[name=theme-color]')?.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
 }
+// Themen-Auswahl gibt es in den Einstellungen und in der Mitspieler-Ansicht
 function renderThemes() {
-  $('#themeRow').innerHTML = THEMES.map(([id, name, a, b]) => `<button class="theme-pick ${state.settings.theme === id ? 'on' : ''}" data-theme-pick="${id}"><i style="background:linear-gradient(135deg,${a},${b})"></i>${name}</button>`).join('');
+  const html = THEMES.map(([id, name, a, b]) => `<button class="theme-pick ${state.settings.theme === id ? 'on' : ''}" data-theme-pick="${id}"><i style="background:linear-gradient(135deg,${a},${b})"></i>${name}</button>`).join('');
+  $('#themeRow').innerHTML = $('#cardThemeRow').innerHTML = html;
 }
-$('#themeRow').onclick = e => {
+$('#themeRow').onclick = $('#cardThemeRow').onclick = e => {
   const b = e.target.closest('[data-theme-pick]'); if (!b) return;
   state.settings.theme = b.dataset.themePick; LS.set('settings', state.settings);
   applyTheme(); renderThemes();
